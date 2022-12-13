@@ -10,7 +10,7 @@
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>qahelper</groupId>
+    <groupId>b2b</groupId>
     <artifactId>api-framework</artifactId>
     <version>0.0.1-SNAPSHOT</version>
 
