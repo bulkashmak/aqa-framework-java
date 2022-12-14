@@ -1,11 +1,25 @@
 {
+  "servers": [
+    {
+      "alias": "test",
+      "uri": "http://192.168.120.113"
+    }
+  ],
+  "clients": [
+    {
+      "alias": "gateway",
+      "port": "8081"
+    }
+  ],
   "users": [
     {
+      "alias": "bulat",
       "phoneNumber": "998917771420",
       "password": "uzum2022",
-      "deviceId": "aft1_device_id"
+      "deviceId": "bulat_device_id"
     },
     {
+      "alias": "",
       "phoneNumber": "998917771420",
       "password": "Uzum2022.",
       "deviceId": "aft1_device_id"

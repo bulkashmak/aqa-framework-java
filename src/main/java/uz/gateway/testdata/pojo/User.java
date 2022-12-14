@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
+        "alias",
         "phoneNumber",
         "password",
         "deviceId"
@@ -20,6 +21,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
+    @JsonProperty("alias")
+    private String alias;
     @JsonProperty("phoneNumber")
     private String phoneNumber;
     @JsonProperty("password")

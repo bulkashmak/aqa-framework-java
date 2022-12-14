@@ -9,7 +9,6 @@ import uz.annotations.allure.Feature;
 import uz.annotations.allure.Story;
 import uz.gateway.AuthService;
 import uz.gateway.dto.auth.signIn.ResponseSignIn;
-import uz.gateway.testdata.TestDataGenerator;
 import uz.gateway.testdata.pojo.User;
 
 @Owner("Bulat Maskurov")
@@ -26,7 +25,7 @@ public class AuthTests extends BaseTest {
     @DisplayName("Sign-in | Валидные данные")
     public void SignInTest() {
 
-        User user = testDataGenerator.getUser(0);
+        User user = testDataGenerator.getUserByAlias("bulat");
 
         ResponseSignIn responseSignIn = authService.postSignIn(
                         user.getPhoneNumber(),
