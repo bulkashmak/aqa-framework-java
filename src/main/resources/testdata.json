@@ -1,9 +1,14 @@
 {
-  "users": {
-    "aft1": {
+  "users": [
+    {
+      "phoneNumber": "998917771420",
+      "password": "uzum2022",
+      "deviceId": "aft1_device_id"
+    },
+    {
       "phoneNumber": "998917771420",
       "password": "Uzum2022.",
       "deviceId": "aft1_device_id"
     }
-  }
+  ]
 }

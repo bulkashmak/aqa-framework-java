@@ -1,4 +1,4 @@
-package uz.dto.common;
+package uz.gateway.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

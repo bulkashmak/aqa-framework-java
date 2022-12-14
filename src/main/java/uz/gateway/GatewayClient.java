@@ -7,6 +7,7 @@ import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.specification.RequestSpecification;
 import org.springframework.stereotype.Service;
+import uz.util.ApiProperties;
 
 @Service
 public class GatewayClient {
@@ -15,7 +16,7 @@ public class GatewayClient {
 
     public GatewayClient() {
         this.defaultSpec = new RequestSpecBuilder()
-                .setBaseUri(B2bProperties.getProperty("gatewayApiUri"))
+                .setBaseUri(ApiProperties.getProperty("gatewayApiUri"))
                 .addFilter(new ResponseLoggingFilter())
                 .addFilter(new RequestLoggingFilter())
                 .setConfig(RestAssuredConfig.config()

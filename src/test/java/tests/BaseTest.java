@@ -3,15 +3,18 @@ package tests;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.boot.test.context.SpringBootTest;
 import uz.ApiBuisnessApplication;
+import uz.gateway.AuthService;
+import uz.gateway.testdata.TestDataGenerator;
+import uz.gateway.testdata.pojo.User;
 
 @SpringBootTest(classes = ApiBuisnessApplication.class)
 public abstract class BaseTest {
-    //todo Static?
-    public static String ADMIN_SESSION_TOKEN;
+
+    protected TestDataGenerator testDataGenerator = new TestDataGenerator();
 
     @BeforeAll
-    public static void authBackOfficeAdmin() {
-//        //todo Hardcode?
+    public static void setUp() {
+        AuthService authService = new AuthService();
 //        AuthService authService = new AuthService();
 //        String adminLogin = "testqa@uzum.com";
 //        String adminPassword = "testqa";

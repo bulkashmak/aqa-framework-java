@@ -3,18 +3,20 @@ package tests.gateway;
 import io.qameta.allure.AllureId;
 import io.qameta.allure.Owner;
 import org.junit.jupiter.api.*;
-import uz.annotations.Epic;
-import uz.annotations.Feature;
-import uz.annotations.Story;
+import tests.BaseTest;
+import uz.annotations.allure.Epic;
+import uz.annotations.allure.Feature;
+import uz.annotations.allure.Story;
 import uz.gateway.AuthService;
-import uz.dto.auth.signIn.ResponseSignIn;
+import uz.gateway.dto.auth.signIn.ResponseSignIn;
+import uz.gateway.testdata.TestDataGenerator;
+import uz.gateway.testdata.pojo.User;
 
 @Owner("Bulat Maskurov")
 @Epic("Gateway API")
 @Feature("Auth service")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class AuthTests {
-
+public class AuthTests extends BaseTest {
     AuthService authService = new AuthService();
 
     @Test
@@ -24,14 +26,12 @@ public class AuthTests {
     @DisplayName("Sign-in | Валидные данные")
     public void SignInTest() {
 
-        String phoneNumber = "998917771420";
-        String password = "uzum2022";
-        String deviceId = "test_device_id";
+        User user = testDataGenerator.getUser(0);
 
         ResponseSignIn responseSignIn = authService.postSignIn(
-                        phoneNumber,
-                        password,
-                        deviceId)
+                        user.getPhoneNumber(),
+                        user.getPassword(),
+                        user.getDeviceId())
                 .statusCode(200)
                 .extract().as(ResponseSignIn.class);
 

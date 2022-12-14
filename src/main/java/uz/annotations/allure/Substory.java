@@ -1,4 +1,4 @@
-package uz.annotations;
+package uz.annotations.allure;
 
 import io.qameta.allure.LabelAnnotation;
 

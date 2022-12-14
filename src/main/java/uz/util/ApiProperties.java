@@ -1,18 +1,18 @@
-package uz.gateway;
+package uz.util;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class B2bProperties {
+public class ApiProperties {
 
-    private static Properties properties = new Properties();
+    private static final Properties properties = new Properties();
 
     static {
-        try(InputStream inputStream = B2bProperties.class.getClassLoader().getResourceAsStream("b2b.properties")) {
+        try(InputStream inputStream = ApiProperties.class.getClassLoader().getResourceAsStream("api.properties")) {
             properties.load(inputStream);
         } catch (IOException e) {
-            throw new RuntimeException("Error while parsing b2b.properties", e);
+            throw new RuntimeException("Error while parsing api.properties", e);
         }
     }
 
