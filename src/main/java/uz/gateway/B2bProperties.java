@@ -1,4 +1,4 @@
-package uz.clients.b2b;
+package uz.gateway;
 
 import java.io.IOException;
 import java.io.InputStream;

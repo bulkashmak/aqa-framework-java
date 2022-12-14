@@ -1,4 +1,4 @@
-package uz.clients.b2b;
+package uz.gateway;
 
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.config.HttpClientConfig;

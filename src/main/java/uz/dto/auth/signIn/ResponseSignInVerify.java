@@ -1,4 +1,4 @@
-package uz.dto.b2b.auth.signIn;
+package uz.dto.auth.signIn;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;

@@ -1,10 +1,10 @@
-package uz.clients.b2b;
+package uz.gateway;
 
 import io.qameta.allure.Step;
 import io.restassured.response.ValidatableResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uz.dto.b2b.auth.signIn.RequestSignInVerify;
+import uz.dto.auth.signIn.RequestSignInVerify;
 
 import static io.restassured.RestAssured.given;
 

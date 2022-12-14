@@ -1,4 +1,4 @@
-package uz.clients.b2b;
+package uz.gateway;
 
 import org.json.simple.parser.JSONParser;
 
