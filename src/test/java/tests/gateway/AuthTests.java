@@ -7,7 +7,7 @@ import tests.BaseTest;
 import uz.annotations.allure.Epic;
 import uz.annotations.allure.Feature;
 import uz.annotations.allure.Story;
-import uz.gateway.dto.auth.signIn.ResponseSignIn;
+import uz.gateway.dto.auth.signIn.response.ResponseSignIn;
 import uz.gateway.testdata.pojo.User;
 
 @Owner("Bulat Maskurov")
@@ -23,7 +23,7 @@ public class AuthTests extends BaseTest {
     @DisplayName("Sign-in | Валидные данные")
     public void SignInTest() {
 
-        User user = testDataGenerator.getUserByAlias("bulat");
+        User user = testDataProvider.getUserByAlias("default");
 
         ResponseSignIn responseSignIn = authService.postSignIn(
                         user.getPhoneNumber(),
