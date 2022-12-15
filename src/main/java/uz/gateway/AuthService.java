@@ -12,9 +12,9 @@ import static io.restassured.RestAssured.given;
 @Slf4j
 public class AuthService extends GatewayClient {
 
-    @Step("AuthService: Авторизация")
+    @Step("Авторизация")
     public ValidatableResponse postSignIn(String phoneNumber, String password, String deviceId) {
-        log.info("AuthService: Авторизация");
+        log.info("Авторизация");
         return given()
                 .spec(defaultSpec)
                 .contentType("application/x-www-form-urlencoded")
@@ -26,9 +26,9 @@ public class AuthService extends GatewayClient {
                 .then();
     }
 
-    @Step("AuthService: Верификация OTP")
+    @Step("Верификация СМС кода")
     public ValidatableResponse postSignInVerify(RequestSignInVerify body) {
-        log.info("AuthService: Верификация OTP");
+        log.info("Верификация СМС кода");
         return given()
                 .spec(defaultSpec)
                 .body(body)
