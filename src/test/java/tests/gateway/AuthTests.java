@@ -7,7 +7,6 @@ import tests.BaseTest;
 import uz.annotations.allure.Epic;
 import uz.annotations.allure.Feature;
 import uz.annotations.allure.Story;
-import uz.gateway.AuthService;
 import uz.gateway.dto.auth.signIn.ResponseSignIn;
 import uz.gateway.testdata.pojo.User;
 
@@ -16,7 +15,6 @@ import uz.gateway.testdata.pojo.User;
 @Feature("Auth service")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AuthTests extends BaseTest {
-    AuthService authService = new AuthService();
 
     @Test
     @AllureId("1117")
