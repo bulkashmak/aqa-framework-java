@@ -1,11 +1,11 @@
 package tests;
 
 import org.springframework.boot.test.context.SpringBootTest;
-import uz.ApiBuisnessApplication;
+import uz.DboB2bApplication;
 import uz.gateway.AuthService;
 import uz.gateway.testdata.TestDataProvider;
 
-@SpringBootTest(classes = ApiBuisnessApplication.class)
+@SpringBootTest(classes = DboB2bApplication.class)
 public abstract class BaseTest {
 
     protected TestDataProvider testDataProvider = new TestDataProvider();

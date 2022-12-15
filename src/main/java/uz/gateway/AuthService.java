@@ -22,7 +22,7 @@ public class AuthService extends GatewayClient {
                 .formParam("password", password)
                 .formParam("deviceId", deviceId)
                 .header("lang", "RU")
-                .post("/auth/sign-in")
+                .post(Path.SIGN_IN.getPath())
                 .then();
     }
 
@@ -32,7 +32,20 @@ public class AuthService extends GatewayClient {
         return given()
                 .spec(defaultSpec)
                 .body(body)
-                .post("/auth/sign-in/verify")
+                .post(Path.SIGN_IN_VERIFY.getPath())
                 .then();
+    }
+
+    private enum Path {
+        SIGN_IN("/auth/sign-in"),
+        SIGN_IN_VERIFY("/auth/sign-in/verify");
+
+        private final String path;
+        Path(String path) {
+            this.path = path;
+        }
+        public String getPath() {
+            return path;
+        }
     }
 }
