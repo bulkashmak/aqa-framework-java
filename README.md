@@ -1,12 +1,13 @@
-## api-middle-tests
+## DBO B2B AQA Framework
 
 ### О проекте:
-Проект с автотестами для бизнес слоя
+Проект по АФТ команды Uzum Business
 
 ### Стек:
-- Java(openjdk18)
-- [qa-helper-lib]
-- Spring-boot
+- Eclipse OpenJDK18
+- Spring boot
+- Junit5
+- Rest Assured
 - Lombok
 
 Для комфортной работы на IDE необходимо установить плагин Lombok Plugin.
@@ -18,16 +19,8 @@
 3) Пишем тесты.
 
 ### Правила написания DTO.
-1) Общие DTO находятся в проекте qahelper.
-> Либа с dto апдейтится раз в 5 минут или `mvn -U, --update-snapshots`
-2) DTO бизнес слоя находятся локально в `src/main/java/uz/dto`
-3) Названия пакетов должны соотвествовать продукту и route. 
-e.g. для route /api/auth/start путь должен быть `src/main/java/uz/dto/auth/start`. 
-Внутри пакета должно быть 2 пакета - request и response. Наименование класса должно соответствовать структуре
-   (Response/Request)(HttpMethod)(Entity) e.g. - `ResponseGetAccount`.
-4) Для описания вложенных JSON используются Статические вложенные классы.
-5) DTO базовых ошибок описывается в `src/main/java/uz/dto/common`
-6) DTO базовых структур (Meta, ValueDescription...) описывается в `src/main/java/uz/dto/common`
+1) DTO хранятся в пакете клиента ~/src/main/java/uz/{client}/dto/
+2) Пакеты в DTO строятся по принципу service -> feature -> request/response
 
 ### Правила написания Services.
 1) На каждый продукт должен быть свой Service Class в котором описываются http методы.
