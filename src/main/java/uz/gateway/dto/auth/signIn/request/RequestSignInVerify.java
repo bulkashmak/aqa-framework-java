@@ -1,4 +1,4 @@
-package uz.gateway.dto.auth.signIn;
+package uz.gateway.dto.auth.signIn.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

@@ -210,4 +210,16 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>test</id>
+        </profile>
+        <profile>
+            <id>pre-prod</id>
+        </profile>
+        <profile>
+            <id>prod</id>
+        </profile>
+    </profiles>
+
 </project>

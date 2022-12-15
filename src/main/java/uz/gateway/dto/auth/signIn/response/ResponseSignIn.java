@@ -1,4 +1,4 @@
-package uz.gateway.dto.auth.signIn;
+package uz.gateway.dto.auth.signIn.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;

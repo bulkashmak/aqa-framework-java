@@ -3,13 +3,14 @@ package tests;
 import org.springframework.boot.test.context.SpringBootTest;
 import uz.ApiBuisnessApplication;
 import uz.gateway.AuthService;
-import uz.gateway.testdata.TestDataGenerator;
+import uz.gateway.testdata.TestDataProvider;
 
 @SpringBootTest(classes = ApiBuisnessApplication.class)
 public abstract class BaseTest {
 
-    protected TestDataGenerator testDataGenerator = new TestDataGenerator();
+    protected TestDataProvider testDataProvider = new TestDataProvider();
     protected AuthService authService = new AuthService();
+
 
 //    @BeforeAll
 //    public static void setUp() {

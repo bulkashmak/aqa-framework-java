@@ -4,7 +4,7 @@ import io.qameta.allure.Step;
 import io.restassured.response.ValidatableResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import uz.gateway.dto.auth.signIn.RequestSignInVerify;
+import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
 
 import static io.restassured.RestAssured.given;
 

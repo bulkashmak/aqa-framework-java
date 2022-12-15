@@ -13,9 +13,14 @@ import java.util.List;
 /*
  * Класс для работы с тестовыми данными в resources
  */
-public class TestDataGenerator {
+public class TestDataProvider {
 
     static TestData testData = readTestData();
+
+    public String getClientURI(String serverAlias, String clientAlias) {
+        return String.format("%s:%s",
+                getServerByAlias(serverAlias).getUri(), getClientByAlias(clientAlias).getPort());
+    }
 
     /*
      * Метод находит и возвращает server по полю 'alias'
