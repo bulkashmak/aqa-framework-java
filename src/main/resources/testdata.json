@@ -19,6 +19,12 @@
       "deviceId": "admin_device_id"
     },
     {
+      "alias": "user",
+      "phoneNumber": "998900000001",
+      "password": "user1234",
+      "deviceId": "user_device_id"
+    },
+    {
       "alias": "default",
       "phoneNumber": "998917771420",
       "password": "uzum2022",

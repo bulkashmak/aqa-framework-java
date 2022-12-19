@@ -11,10 +11,11 @@ import static io.restassured.RestAssured.given;
 public class AdminOperation extends UsersService {
 
     @Step("[ШАГ] Получение списка пользователей")
-    public ValidatableResponse getUsers() {
+    public ValidatableResponse getUsers(String accessToken) {
         log.info("[ШАГ] Получение списка пользователей");
         return given()
                 .spec(defaultSpec)
+                .header("Authorization", String.format("Bearer %s", accessToken))
                 .get(Path.GET_USERS.getPath())
                 .then();
     }
@@ -42,12 +43,13 @@ public class AdminOperation extends UsersService {
     }
 
     @Step("[ШАГ] Удалить пользователя по id")
-    public ValidatableResponse deleteUser(int userId) {
+    public ValidatableResponse deleteUser(String accessToken, int userId) {
         log.info("[ШАГ] Удалить пользователя по id");
 
         String path = String.format(Path.DELETE_USER.getPath(), userId);
         return given()
                 .spec(defaultSpec)
+                .header("Authorization", String.format("Bearer %s", accessToken))
                 .delete(path)
                 .then();
     }

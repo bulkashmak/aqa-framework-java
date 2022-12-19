@@ -80,7 +80,7 @@ public class AuthService extends GatewayClient {
         SIGN_IN_VERIFY("/auth/sign-in/verify"),
         SIGN_UP("/auth/sign-up"),
         SIGN_UP_VERIFY("/auth/sign-up/verify"),
-        SIGN_UP_SET_PASSWORD("/auth/sign-up/verify");
+        SIGN_UP_SET_PASSWORD("/auth/sign-up/set-password");
 
         private final String path;
 

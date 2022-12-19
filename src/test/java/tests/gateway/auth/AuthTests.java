@@ -7,10 +7,15 @@ import tests.gateway.GatewayTest;
 import uz.annotations.allure.Epic;
 import uz.annotations.allure.Feature;
 import uz.annotations.allure.Story;
-import uz.gateway.services.asserts.AuthServiceAssert;
 import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
 import uz.gateway.dto.auth.signIn.response.ResponseSignIn;
 import uz.gateway.dto.auth.signIn.response.ResponseSignInVerify;
+import uz.gateway.dto.auth.signUp.request.RequestSignUp;
+import uz.gateway.dto.auth.signUp.request.RequestSignUpSetPassoword;
+import uz.gateway.dto.auth.signUp.request.RequestSignUpVerify;
+import uz.gateway.dto.auth.signUp.response.ResponseSignUp;
+import uz.gateway.dto.auth.signUp.response.ResponseSignUpSetPassword;
+import uz.gateway.services.asserts.AuthServiceAssert;
 import uz.gateway.testdata.pojo.User;
 
 @Owner("Bulat Maskurov")
@@ -44,11 +49,12 @@ public class AuthTests extends GatewayTest {
             ResponseSignInVerify responseSignInVerify = authService.postSignInVerify(new RequestSignInVerify(
                             user.getDeviceId(),
                             responseSignIn.getData().getConfirmationKey(),
+                            // todo избавиться от hardcode СМС кода
                             "999999"))
                     .statusCode(200)
                     .extract().as(ResponseSignInVerify.class);
 
-            authService.postSignInAssertPositive(responseSignInVerify);
+            authService.postAuthAssertPositive(responseSignInVerify);
         }
     }
 
@@ -65,7 +71,28 @@ public class AuthTests extends GatewayTest {
         @DisplayName("Sign-up | Валидные данные")
         public void signUpTest() {
 
+            User user = testDataProvider.getUserByAlias("user");
+            testDataProvider.deleteUserByPhone(user.getPhoneNumber());
 
+            ResponseSignUp responseSignUp = authService.postSignUp(new RequestSignUp(
+                            user.getPhoneNumber(),
+                            "captcha"))
+                    .statusCode(200)
+                    .extract().as(ResponseSignUp.class);
+
+            authService.postSignUpVerify(new RequestSignUpVerify(
+                            responseSignUp.getData().getConfirmationKey(),
+                            "999999"))
+                    .statusCode(200);
+
+            ResponseSignUpSetPassword responseSignUpSetPassword = authService.postSignUpSetPassword(
+                            new RequestSignUpSetPassoword(
+                                    responseSignUp.getData().getConfirmationKey(),
+                                    user.getPassword()))
+                    .statusCode(200)
+                    .extract().as(ResponseSignUpSetPassword.class);
+
+            authService.postAuthAssertPositive(responseSignUpSetPassword);
         }
     }
 }

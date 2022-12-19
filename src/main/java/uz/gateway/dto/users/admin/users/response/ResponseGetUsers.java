@@ -20,10 +20,10 @@ public class ResponseGetUsers {
     private Long timestamp;
 
     @lombok.Data
-    private static class Data {
+    public static class Data {
 
         @JsonProperty("content")
-        private List<Content> content = null;
+        private List<Content> content;
         @JsonProperty("pageable")
         private Pageable pageable;
         @JsonProperty("totalPages")
@@ -46,7 +46,7 @@ public class ResponseGetUsers {
         private Boolean empty;
 
         @lombok.Data
-        private static class Content {
+        public static class Content {
 
             @JsonProperty("id")
             private Integer id;
@@ -85,7 +85,7 @@ public class ResponseGetUsers {
         }
 
         @lombok.Data
-        private static class Pageable {
+        public static class Pageable {
 
             @JsonProperty("sort")
             private Sort sort;
@@ -101,7 +101,7 @@ public class ResponseGetUsers {
             private Boolean unpaged;
 
             @lombok.Data
-            private static class Sort {
+            public static class Sort {
 
                 @JsonProperty("empty")
                 private Boolean empty;
@@ -113,7 +113,7 @@ public class ResponseGetUsers {
         }
 
         @lombok.Data
-        private static class SortData {
+        public static class SortData {
 
             @JsonProperty("empty")
             private Boolean empty;
