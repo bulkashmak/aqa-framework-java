@@ -1,15 +1,13 @@
-package tests;
+package tests.gateway;
 
 import org.springframework.boot.test.context.SpringBootTest;
 import uz.DboB2bApplication;
-import uz.gateway.AuthService;
 import uz.gateway.testdata.TestDataProvider;
 
 @SpringBootTest(classes = DboB2bApplication.class)
-public abstract class BaseTest {
+public abstract class GatewayTest {
 
     protected TestDataProvider testDataProvider = new TestDataProvider();
-    protected AuthService authService = new AuthService();
 
 
 //    @BeforeAll

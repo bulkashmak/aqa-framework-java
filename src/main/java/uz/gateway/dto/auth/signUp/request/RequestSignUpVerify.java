@@ -1,4 +1,4 @@
-package uz.gateway.dto.auth.signIn.request;
+package uz.gateway.dto.auth.signUp.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -8,10 +8,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequestSignInVerify {
+public class RequestSignUpVerify {
 
-    @JsonProperty("deviceId")
-    private String deviceId;
     @JsonProperty("confirmationKey")
     private String confirmationKey;
     @JsonProperty("code")
