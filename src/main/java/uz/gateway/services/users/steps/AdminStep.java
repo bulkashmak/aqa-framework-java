@@ -7,7 +7,7 @@ import org.junit.Assert;
 import uz.gateway.dto.users.admin.users.response.ResponseGetUsers;
 
 @Slf4j
-public class AdminDomain extends uz.gateway.services.users.domains.AdminDomain {
+public class AdminStep extends uz.gateway.services.users.domains.AdminDomain {
 
     @Step("[ШАГ] Получение списка пользователей")
     public ResponseGetUsers getUsersStep(int expectedStatusCode, String accessToken) {
