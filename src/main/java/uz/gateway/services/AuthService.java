@@ -6,6 +6,7 @@ import io.restassured.response.ValidatableResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uz.gateway.GatewayClient;
+import uz.gateway.GatewayContext;
 import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
 import uz.gateway.dto.auth.signUp.request.RequestSignUpSetPassoword;
 import uz.gateway.dto.auth.signUp.request.RequestSignUp;
@@ -16,6 +17,8 @@ import static io.restassured.RestAssured.given;
 @Service
 @Slf4j
 public class AuthService extends GatewayClient {
+
+    private final GatewayContext context = new GatewayContext();
 
     @Step("[ШАГ] Авторизация зарегистрированного пользователя")
     public ValidatableResponse postSignIn(String phoneNumber, String password, String deviceId) {
