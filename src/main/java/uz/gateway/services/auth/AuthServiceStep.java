@@ -1,96 +1,65 @@
 package uz.gateway.services.auth;
 
 import io.qameta.allure.Step;
-import io.restassured.http.ContentType;
-import io.restassured.response.ValidatableResponse;
+import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
-import uz.gateway.GatewayClient;
-import uz.gateway.GatewayContext;
+import org.junit.Assert;
 import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
-import uz.gateway.dto.auth.signUp.request.RequestSignUpSetPassoword;
+import uz.gateway.dto.auth.signIn.response.ResponseSignIn;
+import uz.gateway.dto.auth.signIn.response.ResponseSignInVerify;
 import uz.gateway.dto.auth.signUp.request.RequestSignUp;
+import uz.gateway.dto.auth.signUp.request.RequestSignUpSetPassoword;
 import uz.gateway.dto.auth.signUp.request.RequestSignUpVerify;
-
-import static io.restassured.RestAssured.given;
+import uz.gateway.dto.auth.signUp.response.ResponseSignUp;
+import uz.gateway.dto.auth.signUp.response.ResponseSignUpSetPassword;
 
 @Slf4j
-public class AuthServiceStep extends GatewayClient {
-
-    private final GatewayContext context = new GatewayContext();
+public class AuthServiceStep extends AuthService {
 
     @Step("[ШАГ] Авторизация зарегистрированного пользователя")
-    public ValidatableResponse postSignIn(String phoneNumber, String password, String deviceId) {
+    public ResponseSignIn signInStep(String phoneNumber, String password, String deviceId) {
         log.info("[ШАГ] Авторизация зарегистрированного пользователя");
-        return given()
-                .spec(defaultSpec)
-                .contentType("application/x-www-form-urlencoded")
-                .formParam("phoneNumber", phoneNumber)
-                .formParam("password", password)
-                .formParam("deviceId", deviceId)
-                .header("lang", "RU")
-                .post(Path.SIGN_IN.getPath())
-                .then();
+        Response response = postSignIn(
+                        phoneNumber, password, deviceId);
+
+        Assert.assertEquals(200, response.getStatusCode());
+
+        return response.getBody().as(ResponseSignIn.class);
     }
 
     @Step("[ШАГ] Авторизация. Верификация СМС кода")
-    public ValidatableResponse postSignInVerify(RequestSignInVerify requestSignInVerify) {
+    public ResponseSignInVerify signInVerifyStep(RequestSignInVerify requestSignInVerify) {
         log.info("[ШАГ] Авторизация. Верификация СМС кода");
-        return given()
-                .spec(defaultSpec)
-                .contentType(ContentType.JSON)
-                .body(requestSignInVerify)
-                .post(Path.SIGN_IN_VERIFY.getPath())
-                .then();
+        Response response = postSignInVerify(requestSignInVerify);
+
+        Assert.assertEquals(200, response.getStatusCode());
+
+        return response.getBody().as(ResponseSignInVerify.class);
     }
 
     @Step("[ШАГ] Регистрация нового пользователя")
-    public ValidatableResponse postSignUp(RequestSignUp requestSignUp) {
+    public ResponseSignUp signUpStep(RequestSignUp requestSignUp) {
         log.info("[ШАГ] Регистрация нового пользователя");
-        return given()
-                .spec(defaultSpec)
-                .contentType(ContentType.JSON)
-                .body(requestSignUp)
-                .post(Path.SIGN_UP.getPath())
-                .then();
+        Response response = postSignUp(requestSignUp);
+
+        return response.getBody().as(ResponseSignUp.class);
     }
 
     @Step("[ШАГ] Регистрация. Верификация СМС кода")
-    public ValidatableResponse postSignUpVerify(RequestSignUpVerify requestSignUpVerify) {
+    public void signUpVerifyStep(RequestSignUpVerify requestSignUpVerify) {
         log.info("[ШАГ] Регистрация. Верификация СМС кода");
-        return given()
-                .spec(defaultSpec)
-                .contentType(ContentType.JSON)
-                .body(requestSignUpVerify)
-                .post(Path.SIGN_UP_VERIFY.getPath())
-                .then();
+        Response response = postSignUpVerify(requestSignUpVerify);
+
+        Assert.assertEquals(200, response.getStatusCode());
     }
 
     @Step("[ШАГ] Регистрация. Установка пароля")
-    public ValidatableResponse postSignUpSetPassword(RequestSignUpSetPassoword requestSignUpSetPassoword) {
+    public ResponseSignUpSetPassword signUpSetPasswordStep(RequestSignUpSetPassoword requestSignUpSetPassoword) {
         log.info("[ШАГ] Регистрация. Установка пароля");
-        return given()
-                .spec(defaultSpec)
-                .contentType(ContentType.JSON)
-                .body(requestSignUpSetPassoword)
-                .post(Path.SIGN_UP_SET_PASSWORD.getPath())
-                .then();
-    }
+        Response response = postSignUpSetPassword(requestSignUpSetPassoword);
 
-    private enum Path {
-        SIGN_IN("/auth/sign-in"),
-        SIGN_IN_VERIFY("/auth/sign-in/verify"),
-        SIGN_UP("/auth/sign-up"),
-        SIGN_UP_VERIFY("/auth/sign-up/verify"),
-        SIGN_UP_SET_PASSWORD("/auth/sign-up/set-password");
+        Assert.assertEquals(200, response.getStatusCode());
 
-        private final String path;
-
-        Path(String path) {
-            this.path = path;
-        }
-
-        public String getPath() {
-            return path;
-        }
+        return response.getBody().as(ResponseSignUpSetPassword.class);
     }
 }

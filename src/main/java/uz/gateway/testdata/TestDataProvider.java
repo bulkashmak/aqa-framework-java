@@ -81,12 +81,10 @@ public class TestDataProvider {
         AuthServiceStep authServiceStep = new AuthServiceStep();
         AdminOperation adminOperation = new AdminOperation();
         User admin = getUserByAlias("admin");
-        ResponseSignIn responseSignIn = authServiceStep.postSignIn(
-                        admin.getPhoneNumber(), admin.getPassword(), admin.getDeviceId())
-                .statusCode(200).extract().as(ResponseSignIn.class);
-        ResponseSignInVerify responseSignInVerify = authServiceStep.postSignInVerify(new RequestSignInVerify(
-                        admin.getDeviceId(), responseSignIn.getData().getConfirmationKey(), "999999"))
-                .statusCode(200).extract().as(ResponseSignInVerify.class);
+        ResponseSignIn responseSignIn = authServiceStep.signInStep(
+                        admin.getPhoneNumber(), admin.getPassword(), admin.getDeviceId());
+        ResponseSignInVerify responseSignInVerify = authServiceStep.signInVerifyStep(new RequestSignInVerify(
+                        admin.getDeviceId(), responseSignIn.getData().getConfirmationKey(), "999999"));
 
         ResponseGetUsers responseGetUsers = adminOperation.getUsers(responseSignInVerify.getData().getAccessToken())
                 .statusCode(200).extract().as(ResponseGetUsers.class);

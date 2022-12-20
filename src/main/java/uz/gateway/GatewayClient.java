@@ -6,11 +6,19 @@ import io.restassured.config.RestAssuredConfig;
 import io.restassured.filter.log.RequestLoggingFilter;
 import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.specification.RequestSpecification;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.stereotype.Service;
 import uz.gateway.testdata.TestDataProvider;
 
 @Service
+@Getter
+@Setter
 public class GatewayClient {
+
+    private String accessToken;
+    private String refreshToken;
+    private String deviceId;
 
     public RequestSpecification defaultSpec;
 
