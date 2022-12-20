@@ -9,7 +9,7 @@ import uz.gateway.dto.auth.signIn.response.ResponseSignIn;
 import uz.gateway.dto.auth.signIn.response.ResponseSignInVerify;
 import uz.gateway.dto.users.admin.users.response.ResponseGetUsers;
 import uz.gateway.services.auth.AuthService;
-import uz.gateway.services.users.domains.AdminOperation;
+import uz.gateway.services.users.steps.AdminDomain;
 import uz.gateway.testdata.pojo.Client;
 import uz.gateway.testdata.pojo.Server;
 import uz.gateway.testdata.pojo.TestData;
@@ -79,9 +79,9 @@ public class TestDataProvider {
      * Метод находит и удаляет пользователя по его номеру телефона
      */
     public void deleteUserByPhone(String phoneNumber) {
-        log.info("[PRECONDITION] Удаление пользователя");
+        log.info("[PRECONDITION] Удаление пользователя с номером телефона {}", phoneNumber);
         AuthService authService = new AuthService();
-        AdminOperation adminOperation = new AdminOperation();
+        AdminDomain adminDomain = new AdminDomain();
         User admin = getUserByAlias("admin");
         Response responseSignIn = authService.postSignIn(
                 admin.getPhoneNumber(), admin.getPassword(), admin.getDeviceId());
@@ -92,12 +92,13 @@ public class TestDataProvider {
                 "999999"));
         ResponseSignInVerify response = responseSignInVerify.as(ResponseSignInVerify.class);
 
-        ResponseGetUsers responseGetUsers = adminOperation.getUsers(response.getData().getAccessToken())
-                .statusCode(200).extract().as(ResponseGetUsers.class);
+        Response responseGetUsers = adminDomain.getUsers(response.getData().getAccessToken());
+        Assert.assertEquals(200, responseGetUsers.getStatusCode());
 
-        ResponseGetUsers.Data.Content user = getUserByPhone(phoneNumber, responseGetUsers);
+        ResponseGetUsers.Data.Content user = getUserByPhone(
+                phoneNumber, responseGetUsers.getBody().as(ResponseGetUsers.class));
         if (user != null) {
-            adminOperation.deleteUser(response.getData().getAccessToken(), user.getId());
+            adminDomain.deleteUser(response.getData().getAccessToken(), user.getId());
         } else {
             log.error(String.format("Пользователь с phoneNumber=[%s] не найден", phoneNumber));
         }

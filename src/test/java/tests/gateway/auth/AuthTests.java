@@ -39,12 +39,13 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("default");
 
-            ResponseSignIn responseSignIn = authService.signInStep(
-                            user.getPhoneNumber(),
-                            user.getPassword(),
-                            user.getDeviceId());
+            ResponseSignIn responseSignIn = authService.signInStep(200,
+                    user.getPhoneNumber(),
+                    user.getPassword(),
+                    user.getDeviceId());
 
-            ResponseSignInVerify responseSignInVerify = authService.signInVerifyStep(new RequestSignInVerify(
+            ResponseSignInVerify responseSignInVerify = authService.signInVerifyStep(200,
+                    new RequestSignInVerify(
                             user.getDeviceId(),
                             responseSignIn.getData().getConfirmationKey(),
                             // todo избавиться от hardcode СМС кода
@@ -70,18 +71,19 @@ public class AuthTests extends GatewayTest {
             User user = testDataProvider.getUserByAlias("user");
             testDataProvider.deleteUserByPhone(user.getPhoneNumber());
 
-            ResponseSignUp responseSignUp = authService.signUpStep(new RequestSignUp(
-                            user.getPhoneNumber(),
-                            "captcha"));
+            ResponseSignUp responseSignUp = authService.signUpStep(200, new RequestSignUp(
+                    user.getPhoneNumber(),
+                    "captcha"));
 
-            authService.signUpVerifyStep(new RequestSignUpVerify(
-                            responseSignUp.getData().getConfirmationKey(),
-                            "999999"));
+            authService.signUpVerifyStep(200, new RequestSignUpVerify(
+                    responseSignUp.getData().getConfirmationKey(),
+                    "999999"));
 
             ResponseSignUpSetPassword responseSignUpSetPassword = authService.signUpSetPasswordStep(
-                            new RequestSignUpSetPassoword(
-                                    responseSignUp.getData().getConfirmationKey(),
-                                    user.getPassword()));
+                    200,
+                    new RequestSignUpSetPassoword(
+                            responseSignUp.getData().getConfirmationKey(),
+                            user.getPassword()));
 
             authService.postAuthAssertPositive(responseSignUpSetPassword);
         }
