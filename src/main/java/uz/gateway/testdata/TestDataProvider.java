@@ -6,7 +6,7 @@ import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
 import uz.gateway.dto.auth.signIn.response.ResponseSignIn;
 import uz.gateway.dto.auth.signIn.response.ResponseSignInVerify;
 import uz.gateway.dto.users.admin.users.response.ResponseGetUsers;
-import uz.gateway.services.auth.AuthService;
+import uz.gateway.services.auth.AuthServiceStep;
 import uz.gateway.services.users.domains.AdminOperation;
 import uz.gateway.testdata.pojo.Client;
 import uz.gateway.testdata.pojo.Server;
@@ -78,13 +78,13 @@ public class TestDataProvider {
      */
     public void deleteUserByPhone(String phoneNumber) {
         log.info("[PRECONDITION] Удаление пользователя");
-        AuthService authService = new AuthService();
+        AuthServiceStep authServiceStep = new AuthServiceStep();
         AdminOperation adminOperation = new AdminOperation();
         User admin = getUserByAlias("admin");
-        ResponseSignIn responseSignIn = authService.postSignIn(
+        ResponseSignIn responseSignIn = authServiceStep.postSignIn(
                         admin.getPhoneNumber(), admin.getPassword(), admin.getDeviceId())
                 .statusCode(200).extract().as(ResponseSignIn.class);
-        ResponseSignInVerify responseSignInVerify = authService.postSignInVerify(new RequestSignInVerify(
+        ResponseSignInVerify responseSignInVerify = authServiceStep.postSignInVerify(new RequestSignInVerify(
                         admin.getDeviceId(), responseSignIn.getData().getConfirmationKey(), "999999"))
                 .statusCode(200).extract().as(ResponseSignInVerify.class);
 

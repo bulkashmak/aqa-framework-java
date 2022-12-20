@@ -1,23 +1,26 @@
 package uz.gateway.services.auth;
 
+import io.qameta.allure.Step;
 import io.restassured.http.ContentType;
 import io.restassured.response.ValidatableResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import uz.gateway.GatewayClient;
+import uz.gateway.GatewayContext;
 import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
-import uz.gateway.dto.auth.signUp.request.RequestSignUp;
 import uz.gateway.dto.auth.signUp.request.RequestSignUpSetPassoword;
+import uz.gateway.dto.auth.signUp.request.RequestSignUp;
 import uz.gateway.dto.auth.signUp.request.RequestSignUpVerify;
 
 import static io.restassured.RestAssured.given;
 
-@Service
 @Slf4j
-public class AuthService extends GatewayClient {
+public class AuthServiceStep extends GatewayClient {
 
+    private final GatewayContext context = new GatewayContext();
+
+    @Step("[ШАГ] Авторизация зарегистрированного пользователя")
     public ValidatableResponse postSignIn(String phoneNumber, String password, String deviceId) {
-        log.info("POST запрос {}", Path.SIGN_IN.getPath());
+        log.info("[ШАГ] Авторизация зарегистрированного пользователя");
         return given()
                 .spec(defaultSpec)
                 .contentType("application/x-www-form-urlencoded")
@@ -29,8 +32,9 @@ public class AuthService extends GatewayClient {
                 .then();
     }
 
+    @Step("[ШАГ] Авторизация. Верификация СМС кода")
     public ValidatableResponse postSignInVerify(RequestSignInVerify requestSignInVerify) {
-        log.info("POST запрос {}", Path.SIGN_IN_VERIFY.getPath());
+        log.info("[ШАГ] Авторизация. Верификация СМС кода");
         return given()
                 .spec(defaultSpec)
                 .contentType(ContentType.JSON)
@@ -39,8 +43,9 @@ public class AuthService extends GatewayClient {
                 .then();
     }
 
+    @Step("[ШАГ] Регистрация нового пользователя")
     public ValidatableResponse postSignUp(RequestSignUp requestSignUp) {
-        log.info("POST запрос {}", Path.SIGN_UP.getPath());
+        log.info("[ШАГ] Регистрация нового пользователя");
         return given()
                 .spec(defaultSpec)
                 .contentType(ContentType.JSON)
@@ -49,8 +54,9 @@ public class AuthService extends GatewayClient {
                 .then();
     }
 
+    @Step("[ШАГ] Регистрация. Верификация СМС кода")
     public ValidatableResponse postSignUpVerify(RequestSignUpVerify requestSignUpVerify) {
-        log.info("POST запрос {}", Path.SIGN_UP_VERIFY.getPath());
+        log.info("[ШАГ] Регистрация. Верификация СМС кода");
         return given()
                 .spec(defaultSpec)
                 .contentType(ContentType.JSON)
@@ -59,8 +65,9 @@ public class AuthService extends GatewayClient {
                 .then();
     }
 
+    @Step("[ШАГ] Регистрация. Установка пароля")
     public ValidatableResponse postSignUpSetPassword(RequestSignUpSetPassoword requestSignUpSetPassoword) {
-        log.info("POST запрос {}", Path.SIGN_UP_SET_PASSWORD.getPath());
+        log.info("[ШАГ] Регистрация. Установка пароля");
         return given()
                 .spec(defaultSpec)
                 .contentType(ContentType.JSON)
