@@ -15,14 +15,14 @@ import uz.gateway.dto.auth.signUp.request.RequestSignUpSetPassoword;
 import uz.gateway.dto.auth.signUp.request.RequestSignUpVerify;
 import uz.gateway.dto.auth.signUp.response.ResponseSignUp;
 import uz.gateway.dto.auth.signUp.response.ResponseSignUpSetPassword;
-import uz.gateway.services.auth.AuthServiceStepAssert;
+import uz.gateway.services.auth.AuthServiceAssert;
 import uz.gateway.testdata.pojo.User;
 
 @Owner("Bulat Maskurov")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AuthTests extends GatewayTest {
 
-    AuthServiceStepAssert authService = new AuthServiceStepAssert();
+    AuthServiceAssert authService = new AuthServiceAssert();
 
     @Nested
     @Owner("Bulat Maskurov")

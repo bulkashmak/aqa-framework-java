@@ -7,7 +7,7 @@ import uz.gateway.dto.auth.signIn.response.ResponseSignInVerify;
 import uz.gateway.dto.auth.signUp.response.ResponseSignUpSetPassword;
 
 @Slf4j
-public class AuthServiceStepAssert extends AuthServiceStep {
+public class AuthServiceAssert extends AuthServiceStep {
 
     @Step("[ПРОВЕРКА] Авторизация")
     public void postAuthAssertPositive(ResponseSignInVerify responseSignInVerify) {

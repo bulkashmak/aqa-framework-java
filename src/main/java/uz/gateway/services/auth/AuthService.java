@@ -21,9 +21,9 @@ public class AuthService extends GatewayClient {
         return given()
                 .spec(defaultSpec)
                 .contentType("application/x-www-form-urlencoded")
-                .formParam("phoneNumber", phoneNumber)
-                .formParam("password", password)
-                .formParam("deviceId", deviceId)
+                .formParam(SignInForm.PHONE_NUMBER.getField(), phoneNumber)
+                .formParam(SignInForm.PASSWORD.getField(), password)
+                .formParam(SignInForm.DEVICE_ID.getField(), deviceId)
                 .header("lang", "RU")
                 .post(Path.SIGN_IN.getPath())
                 .then();
@@ -84,6 +84,22 @@ public class AuthService extends GatewayClient {
 
         public String getPath() {
             return path;
+        }
+    }
+
+    private enum SignInForm {
+        PHONE_NUMBER("phoneNumber"),
+        PASSWORD("password"),
+        DEVICE_ID("deviceId");
+
+        private final String field;
+
+        SignInForm(String field) {
+            this.field = field;
+        }
+
+        public String getField() {
+            return field;
         }
     }
 }
