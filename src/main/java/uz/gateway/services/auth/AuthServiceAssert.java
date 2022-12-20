@@ -1,11 +1,10 @@
-package uz.gateway.services.asserts;
+package uz.gateway.services.auth;
 
 import io.qameta.allure.Step;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import uz.gateway.dto.auth.signIn.response.ResponseSignInVerify;
 import uz.gateway.dto.auth.signUp.response.ResponseSignUpSetPassword;
-import uz.gateway.services.AuthService;
 
 @Slf4j
 public class AuthServiceAssert extends AuthService {

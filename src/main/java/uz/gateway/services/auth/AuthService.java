@@ -1,4 +1,4 @@
-package uz.gateway.services;
+package uz.gateway.services.auth;
 
 import io.qameta.allure.Step;
 import io.restassured.http.ContentType;

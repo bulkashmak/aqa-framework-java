@@ -1,9 +1,9 @@
-package uz.gateway.services.domains;
+package uz.gateway.services.users.domains;
 
 import io.qameta.allure.Step;
 import io.restassured.response.ValidatableResponse;
 import lombok.extern.slf4j.Slf4j;
-import uz.gateway.services.UsersService;
+import uz.gateway.services.users.UsersService;
 
 import static io.restassured.RestAssured.given;
 

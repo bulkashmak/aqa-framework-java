@@ -15,7 +15,7 @@ import uz.gateway.dto.auth.signUp.request.RequestSignUpSetPassoword;
 import uz.gateway.dto.auth.signUp.request.RequestSignUpVerify;
 import uz.gateway.dto.auth.signUp.response.ResponseSignUp;
 import uz.gateway.dto.auth.signUp.response.ResponseSignUpSetPassword;
-import uz.gateway.services.asserts.AuthServiceAssert;
+import uz.gateway.services.auth.AuthServiceAssert;
 import uz.gateway.testdata.pojo.User;
 
 @Owner("Bulat Maskurov")
@@ -62,7 +62,7 @@ public class AuthTests extends GatewayTest {
     @Owner("Bulat Maskurov")
     @Epic("Gateway API")
     @Feature("Auth service")
-    @Story("Sign-in")
+    @Story("Sign-up")
     public class SignUpTests {
 
         @Test
