@@ -15,7 +15,8 @@ import lombok.NoArgsConstructor;
         "alias",
         "phoneNumber",
         "password",
-        "deviceId"
+        "deviceId",
+        "otp"
 })
 @Data
 @AllArgsConstructor
@@ -29,4 +30,6 @@ public class User {
     private String password;
     @JsonProperty("deviceId")
     private String deviceId;
+    @JsonProperty("otp")
+    private String otp;
 }

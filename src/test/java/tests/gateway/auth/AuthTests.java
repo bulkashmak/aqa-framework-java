@@ -49,7 +49,7 @@ public class AuthTests extends GatewayTest {
                             user.getDeviceId(),
                             responseSignIn.getData().getConfirmationKey(),
                             // todo избавиться от hardcode СМС кода
-                            "999999"));
+                            user.getOtp()));
 
             authService.postAuthAssertPositive(responseSignInVerify);
         }
@@ -77,7 +77,7 @@ public class AuthTests extends GatewayTest {
 
             authService.signUpVerifyStep(200, new RequestSignUpVerify(
                     responseSignUp.getData().getConfirmationKey(),
-                    "999999"));
+                    user.getOtp()));
 
             ResponseSignUpSetPassword responseSignUpSetPassword = authService.signUpSetPasswordStep(
                     200,

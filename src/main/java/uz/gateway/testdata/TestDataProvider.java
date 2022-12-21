@@ -89,7 +89,7 @@ public class TestDataProvider {
         Response responseSignInVerify = authService.postSignInVerify(new RequestSignInVerify(
                 admin.getDeviceId(),
                 responseSignIn.getBody().as(ResponseSignIn.class).getData().getConfirmationKey(),
-                "999999"));
+                admin.getOtp()));
         ResponseSignInVerify response = responseSignInVerify.as(ResponseSignInVerify.class);
 
         Response responseGetUsers = adminStep.getUsers(response.getData().getAccessToken());
