@@ -12,15 +12,16 @@ import uz.gateway.dto.auth.signUp.request.RequestSignUpSetPassoword;
 import uz.gateway.dto.auth.signUp.request.RequestSignUpVerify;
 import uz.gateway.dto.auth.signUp.response.ResponseSignUp;
 import uz.gateway.dto.auth.signUp.response.ResponseSignUpSetPassword;
+import uz.gateway.testdata.pojo.User;
 
 @Slf4j
 public class AuthServiceStep extends AuthService {
 
     @Step("[ШАГ] Авторизация зарегистрированного пользователя")
-    public ResponseSignIn signInStep(int expectedStatusCode, String phoneNumber, String password, String deviceId) {
+    public ResponseSignIn signInStep(int expectedStatusCode, User user) {
         log.info("[ШАГ] Авторизация зарегистрированного пользователя");
         Response response = postSignIn(
-                        phoneNumber, password, deviceId);
+                        user.getPhoneNumber(), user.getPassword(), user.getDeviceId());
 
         Assert.assertEquals(expectedStatusCode, response.getStatusCode());
 

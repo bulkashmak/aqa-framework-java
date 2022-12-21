@@ -39,10 +39,8 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("default");
 
-            ResponseSignIn responseSignIn = authService.signInStep(200,
-                    user.getPhoneNumber(),
-                    user.getPassword(),
-                    user.getDeviceId());
+            ResponseSignIn responseSignIn = authService.signInStep(
+                    200, user);
 
             ResponseSignInVerify responseSignInVerify = authService.signInVerifyStep(200,
                     new RequestSignInVerify(
