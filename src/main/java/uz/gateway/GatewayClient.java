@@ -16,10 +16,6 @@ import uz.gateway.testdata.TestDataProvider;
 @Setter
 public class GatewayClient {
 
-    private String accessToken;
-    private String refreshToken;
-    private String deviceId;
-
     public RequestSpecification defaultSpec;
 
     public GatewayClient() {
