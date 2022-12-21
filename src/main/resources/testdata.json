@@ -13,16 +13,28 @@
   ],
   "users": [
     {
+      "alias": "admin",
+      "phoneNumber": "998900000000",
+      "password": "admin1234",
+      "deviceId": "admin_device_id"
+    },
+    {
+      "alias": "user",
+      "phoneNumber": "998900000001",
+      "password": "user1234",
+      "deviceId": "user_device_id"
+    },
+    {
       "alias": "default",
       "phoneNumber": "998917771420",
       "password": "uzum2022",
       "deviceId": "bulat_device_id"
     },
     {
-      "alias": "",
-      "phoneNumber": "998917771420",
-      "password": "Uzum2022.",
-      "deviceId": "aft1_device_id"
+      "alias": "mock",
+      "phoneNumber": "998909999999",
+      "password": "uzum1234.",
+      "deviceId": "mock_device_id"
     }
   ]
 }
