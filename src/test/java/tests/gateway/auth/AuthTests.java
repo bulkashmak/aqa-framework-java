@@ -9,20 +9,18 @@ import uz.annotations.allure.Feature;
 import uz.annotations.allure.Story;
 import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
 import uz.gateway.dto.auth.signIn.response.ResponseSignIn;
-import uz.gateway.dto.auth.signIn.response.ResponseSignInVerify;
 import uz.gateway.dto.auth.signUp.request.RequestSignUp;
 import uz.gateway.dto.auth.signUp.request.RequestSignUpSetPassoword;
 import uz.gateway.dto.auth.signUp.request.RequestSignUpVerify;
 import uz.gateway.dto.auth.signUp.response.ResponseSignUp;
-import uz.gateway.dto.auth.signUp.response.ResponseSignUpSetPassword;
-import uz.gateway.services.auth.AuthServiceAssert;
+import uz.gateway.services.auth.AuthServiceStep;
 import uz.gateway.testdata.pojo.User;
 
 @Owner("Bulat Maskurov")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AuthTests extends GatewayTest {
 
-    AuthServiceAssert authService = new AuthServiceAssert();
+    AuthServiceStep authService = new AuthServiceStep();
 
     @Nested
     @Owner("Bulat Maskurov")
@@ -42,14 +40,11 @@ public class AuthTests extends GatewayTest {
             ResponseSignIn responseSignIn = authService.signInStep(
                     200, user);
 
-            ResponseSignInVerify responseSignInVerify = authService.signInVerifyStep(200,
+            authService.signInVerifyStep(200,
                     new RequestSignInVerify(
                             user.getDeviceId(),
                             responseSignIn.getData().getConfirmationKey(),
-                            // todo избавиться от hardcode СМС кода
                             user.getOtp()));
-
-            authService.postAuthAssertPositive(responseSignInVerify);
         }
     }
 
@@ -77,13 +72,11 @@ public class AuthTests extends GatewayTest {
                     responseSignUp.getData().getConfirmationKey(),
                     user.getOtp()));
 
-            ResponseSignUpSetPassword responseSignUpSetPassword = authService.signUpSetPasswordStep(
+            authService.signUpSetPasswordStep(
                     200,
                     new RequestSignUpSetPassoword(
                             responseSignUp.getData().getConfirmationKey(),
                             user.getPassword()));
-
-            authService.postAuthAssertPositive(responseSignUpSetPassword);
         }
     }
 }
