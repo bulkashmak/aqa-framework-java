@@ -34,10 +34,10 @@
       "otp": "999999"
     },
     {
-      "alias": "mock",
-      "phoneNumber": "998909999999",
-      "password": "uzum1234.",
-      "deviceId": "mock_device_id",
+      "alias": "delete",
+      "phoneNumber": "998901111111",
+      "password": "delete1234",
+      "deviceId": "delete_device_id",
       "otp": "999999"
     }
   ]

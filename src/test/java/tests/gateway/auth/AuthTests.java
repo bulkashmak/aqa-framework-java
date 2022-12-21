@@ -14,7 +14,10 @@ import uz.gateway.dto.auth.signUp.request.RequestSignUpSetPassoword;
 import uz.gateway.dto.auth.signUp.request.RequestSignUpVerify;
 import uz.gateway.dto.auth.signUp.response.ResponseSignUp;
 import uz.gateway.services.auth.AuthServiceStep;
+import uz.gateway.services.auth.enums.SignUpPasswordError;
 import uz.gateway.testdata.pojo.User;
+
+import java.util.Map;
 
 @Owner("Bulat Maskurov")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -31,20 +34,71 @@ public class AuthTests extends GatewayTest {
 
         @Test
         @AllureId("1117")
-        @Tags({@Tag("positive")})
+        @Tag("positive")
         @DisplayName("Sign-in | Валидные данные")
         public void signInTest() {
 
             User user = testDataProvider.getUserByAlias("default");
 
-            ResponseSignIn responseSignIn = authService.signInStep(
-                    200, user);
+            ResponseSignIn responseSignIn = authService.signInStep(user);
 
-            authService.signInVerifyStep(200,
-                    new RequestSignInVerify(
-                            user.getDeviceId(),
-                            responseSignIn.getData().getConfirmationKey(),
-                            user.getOtp()));
+            authService.signInVerifyStep(new RequestSignInVerify(
+                    user.getDeviceId(),
+                    responseSignIn.getData().getConfirmationKey(),
+                    user.getOtp()));
+        }
+
+        @Test
+        @AllureId("2094")
+        @Tag("negative")
+        @DisplayName("Sign-in | Неверный номер телефона")
+        public void signInInvalidPhoneTest() {
+
+            User user = testDataProvider.getUserByAlias("delete");
+
+            authService.signInInvalidPhoneStep(user);
+        }
+
+        @Test
+        @AllureId("2095")
+        @Tag("negative")
+        @DisplayName("Sign-in | Неверный СМС код")
+        public void signInInvalidOtpTest() {
+
+            User user = testDataProvider.getUserByAlias("default");
+
+            ResponseSignIn responseSignIn = authService.signInStep(user);
+            authService.signInVerifyInvalidOtpStep(new RequestSignInVerify(
+                    user.getDeviceId(),
+                    responseSignIn.getData().getConfirmationKey(),
+                    "000000"));
+        }
+
+        @Test
+        @AllureId("2096")
+        @Tag("negative")
+        @DisplayName("Sign-in | Неверный пароль")
+        public void signInInvalidPasswordTest() {
+
+            User user = testDataProvider.getUserByAlias("default");
+            user.setPassword(user.getPassword() + 1);
+
+            authService.signInInvalidPasswordStep(user);
+        }
+
+        @Test
+        @AllureId("2099")
+        @Tag("negative")
+        @DisplayName("Sign-in | Срок действия СМС кода истек")
+        public void signInOtpExpiredTest() {
+
+            User user = testDataProvider.getUserByAlias("default");
+
+            ResponseSignIn responseSignIn = authService.signInStep(user);
+            authService.signInVerifyOtpExpiredStep(new RequestSignInVerify(
+                    user.getDeviceId(),
+                    responseSignIn.getData().getConfirmationKey(),
+                    user.getOtp()));
         }
     }
 
@@ -64,19 +118,90 @@ public class AuthTests extends GatewayTest {
             User user = testDataProvider.getUserByAlias("user");
             testDataProvider.deleteUserByPhone(user.getPhoneNumber());
 
-            ResponseSignUp responseSignUp = authService.signUpStep(200, new RequestSignUp(
-                    user.getPhoneNumber(),
-                    "captcha"));
+            ResponseSignUp responseSignUp = authService.signUpStep(new RequestSignUp(
+                    user.getPhoneNumber(), "captcha"));
 
-            authService.signUpVerifyStep(200, new RequestSignUpVerify(
-                    responseSignUp.getData().getConfirmationKey(),
-                    user.getOtp()));
+            authService.signUpVerifyStep(new RequestSignUpVerify(
+                    responseSignUp.getData().getConfirmationKey(), user.getOtp()));
 
             authService.signUpSetPasswordStep(
                     200,
                     new RequestSignUpSetPassoword(
                             responseSignUp.getData().getConfirmationKey(),
                             user.getPassword()));
+        }
+
+        @Test
+        @AllureId("2103")
+        @Tag("negative")
+        @DisplayName("Sign-up | Зарегистрированный номер телефона")
+        public void signUpRegisteredPhoneTest() {
+
+            User user = testDataProvider.getUserByAlias("user");
+
+            authService.signUpRegisteredPhoneStep(new RequestSignUp(
+                    user.getPhoneNumber(), "captcha"));
+        }
+
+        @Test
+        @AllureId("2107")
+        @Tag("negative")
+        @DisplayName("Sign-up | Неверный СМС код")
+        public void signUpInvalidOtpTest() {
+
+            User user = testDataProvider.getUserByAlias("delete");
+            testDataProvider.deleteUserByPhone(user.getPhoneNumber());
+
+            ResponseSignUp responseSignUp = authService.signUpStep(new RequestSignUp(
+                    user.getPhoneNumber(), "captcha"));
+            authService.signUpVerifyInvalidOtpStep(new RequestSignUpVerify(
+                    responseSignUp.getData().getConfirmationKey(), "000000"));
+        }
+
+        @Test
+        @AllureId("2108")
+        @Tag("negative")
+        @DisplayName("Sign-up | Срок действия СМС кода истек")
+        public void signUpExpiredOtpTest() {
+
+            User user = testDataProvider.getUserByAlias("delete");
+            testDataProvider.deleteUserByPhone(user.getPhoneNumber());
+
+            ResponseSignUp responseSignUp = authService.signUpStep(new RequestSignUp(
+                    user.getPhoneNumber(), "captcha"));
+            authService.signUpVerifyExpiredOtpStep(new RequestSignUpVerify(
+                    responseSignUp.getData().getConfirmationKey(), user.getOtp()));
+        }
+
+        @Test
+        @AllureId("2104")
+        @Tag("negative")
+        @DisplayName("Sign-up | Неверный пароль")
+        public void signUpInvalidPasswordTest() {
+
+            User user = testDataProvider.getUserByAlias("delete");
+            testDataProvider.deleteUserByPhone(user.getPhoneNumber());
+
+            Map<String, String> invalidPasswords = Map.of(
+                    SignUpPasswordError.TOO_SHORT.getError(), "asdf123",
+                    SignUpPasswordError.TOO_LONG.getError(), "a12345678901234567890",
+                    SignUpPasswordError.INVALID_CHARACTERS.getError(), "фあasdf1234",
+                    SignUpPasswordError.NO_LETTER.getError(), "12345678",
+                    SignUpPasswordError.NO_DIGIT.getError(), "asdfghjk"
+            );
+
+            ResponseSignUp responseSignUp = authService.signUpStep(new RequestSignUp(
+                    user.getPhoneNumber(), "captcha"));
+
+            authService.signUpVerifyStep(new RequestSignUpVerify(
+                    responseSignUp.getData().getConfirmationKey(), user.getOtp()));
+
+            for (var entry : invalidPasswords.entrySet()) {
+                authService.signUpInvalidPasswordStep(new RequestSignUpSetPassoword(
+                        responseSignUp.getData().getConfirmationKey(),
+                        entry.getValue()),
+                        entry.getKey());
+            }
         }
     }
 }
