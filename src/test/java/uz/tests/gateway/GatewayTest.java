@@ -1,4 +1,4 @@
-package tests.gateway;
+package uz.tests.gateway;
 
 import org.springframework.boot.test.context.SpringBootTest;
 import uz.DboB2bApplication;

@@ -1,9 +1,9 @@
-package tests.gateway.auth;
+package uz.tests.gateway.auth;
 
 import io.qameta.allure.AllureId;
 import io.qameta.allure.Owner;
 import org.junit.jupiter.api.*;
-import tests.gateway.GatewayTest;
+import uz.tests.gateway.GatewayTest;
 import uz.annotations.allure.Epic;
 import uz.annotations.allure.Feature;
 import uz.annotations.allure.Story;
@@ -55,6 +55,7 @@ public class AuthTests extends GatewayTest {
         public void signInInvalidPhoneTest() {
 
             User user = testDataProvider.getUserByAlias("delete");
+            testDataProvider.deleteUserByPhone(user.getPhoneNumber());
 
             authService.signInInvalidPhoneStep(user);
         }
@@ -81,9 +82,8 @@ public class AuthTests extends GatewayTest {
         public void signInInvalidPasswordTest() {
 
             User user = testDataProvider.getUserByAlias("default");
-            user.setPassword(user.getPassword() + 1);
 
-            authService.signInInvalidPasswordStep(user);
+            authService.signInInvalidPasswordStep(user, user.getPassword() + 1);
         }
 
         @Test

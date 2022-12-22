@@ -58,10 +58,10 @@ public class AuthServiceStep extends AuthService {
     }
 
     @Step("[ШАГ] Авторизация с НЕверным паролем")
-    public void signInInvalidPasswordStep(User user) {
+    public void signInInvalidPasswordStep(User user, String password) {
         log.info("[ШАГ] Авторизация зарегистрированного пользователя с НЕверным паролем");
         Response response = postSignIn(
-                user.getPhoneNumber(), user.getPassword(), user.getDeviceId());
+                user.getPhoneNumber(), password, user.getDeviceId());
 
         assertEquals(403, response.getStatusCode(),
                 "При авторизации с НЕверным паролем вернулся неверный статус код");
