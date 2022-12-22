@@ -112,7 +112,7 @@ public class TestDataProvider {
     /*
      * Метод читает файл resources/testdata.json и сериализует его в объект TestData
      */
-    public static TestData readTestData() {
+    private static TestData readTestData() {
         ObjectMapper objectMapper = new ObjectMapper();
         TestData testData;
         try {
