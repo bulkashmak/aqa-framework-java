@@ -7,7 +7,7 @@ import uz.gateway.services.users.UsersService;
 import static io.restassured.RestAssured.given;
 
 @Slf4j
-public class AdminDomain extends UsersService {
+public class AdminController extends UsersService {
 
     public Response getUsers(String accessToken) {
         log.info("GET запрос {}", Path.GET_USERS.getPath());

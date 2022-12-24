@@ -5,9 +5,10 @@ import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import uz.gateway.dto.users.admin.users.response.ResponseGetUsers;
+import uz.gateway.services.users.domains.AdminController;
 
 @Slf4j
-public class AdminStep extends uz.gateway.services.users.domains.AdminDomain {
+public class AdminStep extends AdminController {
 
     @Step("[ШАГ] Получение списка пользователей")
     public ResponseGetUsers getUsersStep(int expectedStatusCode, String accessToken) {

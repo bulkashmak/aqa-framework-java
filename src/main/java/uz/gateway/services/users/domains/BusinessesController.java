@@ -1,4 +1,4 @@
 package uz.gateway.services.users.domains;
 
-public class BusinessDomain {
+public class BusinessesController {
 }
