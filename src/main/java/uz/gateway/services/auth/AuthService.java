@@ -1,11 +1,9 @@
 package uz.gateway.services.auth;
 
 import io.restassured.http.ContentType;
-import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uz.gateway.GatewayContainer;
 import uz.gateway.GatewayClient;
 import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
 import uz.gateway.dto.auth.signUp.request.RequestSignUp;
@@ -19,10 +17,7 @@ import static io.restassured.RestAssured.given;
 @Service
 public class AuthService extends GatewayClient {
 
-    @Autowired
-    GatewayContainer gatewayContainer;
-
-    public Response postSignIn(String phoneNumber, String password, String deviceId) {
+    public ValidatableResponse postSignIn(String phoneNumber, String password, String deviceId) {
         log.info("POST запрос {}", Path.SIGN_IN.getPath());
         return given()
                 .spec(defaultSpec)
@@ -31,43 +26,48 @@ public class AuthService extends GatewayClient {
                 .formParam(SignInForm.PASSWORD.getField(), password)
                 .formParam(SignInForm.DEVICE_ID.getField(), deviceId)
                 .header("lang", "RU")
-                .post(Path.SIGN_IN.getPath());
+                .post(Path.SIGN_IN.getPath())
+                .then();
     }
 
-    public Response postSignInVerify(RequestSignInVerify requestSignInVerify) {
+    public ValidatableResponse postSignInVerify(RequestSignInVerify requestSignInVerify) {
         log.info("POST запрос {}", Path.SIGN_IN_VERIFY.getPath());
         return given()
                 .spec(defaultSpec)
                 .contentType(ContentType.JSON)
                 .body(requestSignInVerify)
-                .post(Path.SIGN_IN_VERIFY.getPath());
+                .post(Path.SIGN_IN_VERIFY.getPath())
+                .then();
     }
 
-    public Response postSignUp(RequestSignUp requestSignUp) {
+    public ValidatableResponse postSignUp(RequestSignUp requestSignUp) {
         log.info("POST запрос {}", Path.SIGN_UP.getPath());
         return given()
                 .spec(defaultSpec)
                 .contentType(ContentType.JSON)
                 .body(requestSignUp)
-                .post(Path.SIGN_UP.getPath());
+                .post(Path.SIGN_UP.getPath())
+                .then();
     }
 
-    public Response postSignUpVerify(RequestSignUpVerify requestSignUpVerify) {
+    public ValidatableResponse postSignUpVerify(RequestSignUpVerify requestSignUpVerify) {
         log.info("POST запрос {}", Path.SIGN_UP_VERIFY.getPath());
         return given()
                 .spec(defaultSpec)
                 .contentType(ContentType.JSON)
                 .body(requestSignUpVerify)
-                .post(Path.SIGN_UP_VERIFY.getPath());
+                .post(Path.SIGN_UP_VERIFY.getPath())
+                .then();
     }
 
-    public Response postSignUpSetPassword(RequestSignUpSetPassoword requestSignUpSetPassoword) {
+    public ValidatableResponse postSignUpSetPassword(RequestSignUpSetPassoword requestSignUpSetPassoword) {
         log.info("POST запрос {}", Path.SIGN_UP_SET_PASSWORD.getPath());
         return given()
                 .spec(defaultSpec)
                 .contentType(ContentType.JSON)
                 .body(requestSignUpSetPassoword)
-                .post(Path.SIGN_UP_SET_PASSWORD.getPath());
+                .post(Path.SIGN_UP_SET_PASSWORD.getPath())
+                .then();
     }
 
     private enum Path {

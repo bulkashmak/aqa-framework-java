@@ -127,7 +127,6 @@ public class AuthTests extends GatewayTest {
                     responseSignUp.getData().getConfirmationKey(), user.getOtp()));
 
             authServiceStep.signUpSetPasswordStep(
-                    200,
                     new RequestSignUpSetPassoword(
                             responseSignUp.getData().getConfirmationKey(),
                             user.getPassword()));
@@ -200,8 +199,8 @@ public class AuthTests extends GatewayTest {
 
             for (var entry : invalidPasswords.entrySet()) {
                 authServiceStep.signUpInvalidPasswordStep(new RequestSignUpSetPassoword(
-                        responseSignUp.getData().getConfirmationKey(),
-                        entry.getValue()),
+                                responseSignUp.getData().getConfirmationKey(),
+                                entry.getValue()),
                         entry.getKey());
             }
         }

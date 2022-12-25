@@ -1,13 +1,14 @@
 package uz.gateway.services.users;
 
 import io.qameta.allure.Step;
-import io.restassured.response.Response;
+import io.restassured.http.ContentType;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uz.gateway.dto.users.admin.users.response.ResponseGetUsers;
 import uz.gateway.services.users.controllers.AdminController;
+
+import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 
 @Slf4j
 @Service
@@ -17,15 +18,12 @@ public class UsersServiceStep {
     AdminController adminController;
 
     @Step("[ШАГ] Получение списка пользователей")
-    public ResponseGetUsers getUsersStep(int expectedStatusCode, String accessToken) {
+    public ResponseGetUsers getUsersStep(String accessToken) {
         log.info("[ШАГ] Получение списка пользователей");
-        Response response = adminController.getUsers(accessToken);
-
-        Assert.assertEquals(
-                String.format("GET запрос %s вернул неверный status code", AdminController.Path.GET_USERS.getPath()),
-                expectedStatusCode, response.getStatusCode());
-
-        return response.getBody().as(ResponseGetUsers.class);
+        return adminController.getUsers(accessToken)
+                .statusCode(SC_OK)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseGetUsers.class);
     }
 
     @Step("[ШАГ] Получить пользователя по id")
@@ -39,12 +37,9 @@ public class UsersServiceStep {
     }
 
     @Step("[ШАГ] Удалить пользователя по id")
-    public void deleteUserStep(int expectedStatusCode, String accessToken, int userId) {
+    public void deleteUserStep(String accessToken, int userId) {
         log.info("[ШАГ] Удалить пользователя по id");
-        Response response = adminController.deleteUser(accessToken, userId);
-
-        Assert.assertEquals(
-                String.format("GET запрос %s вернул неверный status code", AdminController.Path.GET_USER.getPath()),
-                expectedStatusCode, response.getStatusCode());
+        adminController.deleteUser(accessToken, userId)
+                .statusCode(SC_OK);
     }
 }

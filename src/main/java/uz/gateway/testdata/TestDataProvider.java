@@ -1,9 +1,8 @@
 package uz.gateway.testdata;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.restassured.response.Response;
+import io.restassured.http.ContentType;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
@@ -20,6 +19,8 @@ import uz.gateway.testdata.pojo.User;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+
+import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 
 /*
  * Класс для работы с тестовыми данными в resources
@@ -90,22 +91,26 @@ public class TestDataProvider {
     public void deleteUserByPhone(String phoneNumber) {
         log.info("[PRECONDITION] Удаление пользователя с номером телефона {}", phoneNumber);
         User admin = getUserByAlias("admin");
-        Response responseSignIn = authService.postSignIn(
-                admin.getPhoneNumber(), admin.getPassword(), admin.getDeviceId());
-        Assert.assertEquals(200, responseSignIn.getStatusCode());
-        Response responseSignInVerify = authService.postSignInVerify(new RequestSignInVerify(
-                admin.getDeviceId(),
-                responseSignIn.getBody().as(ResponseSignIn.class).getData().getConfirmationKey(),
-                admin.getOtp()));
-        ResponseSignInVerify response = responseSignInVerify.as(ResponseSignInVerify.class);
+        ResponseSignIn responseSignIn = authService.postSignIn(
+                        admin.getPhoneNumber(), admin.getPassword(), admin.getDeviceId())
+                .statusCode(SC_OK)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseSignIn.class);
+        ResponseSignInVerify responseSignInVerify = authService.postSignInVerify(new RequestSignInVerify(
+                        admin.getDeviceId(),
+                        responseSignIn.getData().getConfirmationKey(),
+                        admin.getOtp()))
+                .statusCode(SC_OK)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseSignInVerify.class);
 
-        Response responseGetUsers = adminController.getUsers(response.getData().getAccessToken());
-        Assert.assertEquals(200, responseGetUsers.getStatusCode());
+        ResponseGetUsers responseGetUsers = adminController.getUsers(responseSignInVerify.getData().getAccessToken())
+                .statusCode(SC_OK)
+                .extract().as(ResponseGetUsers.class);
 
-        ResponseGetUsers.Data.Content user = getUserByPhone(
-                phoneNumber, responseGetUsers.getBody().as(ResponseGetUsers.class));
+        ResponseGetUsers.Data.Content user = getUserByPhone(phoneNumber, responseGetUsers);
         if (user != null) {
-            adminController.deleteUser(response.getData().getAccessToken(), user.getId());
+            adminController.deleteUser(responseSignInVerify.getData().getAccessToken(), user.getId());
         } else {
             log.error(String.format("Пользователь с phoneNumber=[%s] не найден", phoneNumber));
         }
