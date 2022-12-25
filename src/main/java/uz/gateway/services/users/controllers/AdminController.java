@@ -1,13 +1,20 @@
-package uz.gateway.services.users.domains;
+package uz.gateway.services.users.controllers;
 
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
-import uz.gateway.services.users.UsersService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import uz.gateway.GatewayClient;
+import uz.gateway.GatewayContainer;
 
 import static io.restassured.RestAssured.given;
 
 @Slf4j
-public class AdminController extends UsersService {
+@Service
+public class AdminController extends GatewayClient {
+
+    @Autowired
+    GatewayContainer gatewayContainer;
 
     public Response getUsers(String accessToken) {
         log.info("GET запрос {}", Path.GET_USERS.getPath());
@@ -42,7 +49,7 @@ public class AdminController extends UsersService {
                 .delete(path);
     }
 
-    protected enum Path {
+    public enum Path {
         GET_USERS("/users/admin/users"),
         GET_USER("/users/admin/users/%s"),
         POST_LOCK_USER("/users/admin/users/%s/lock"),

@@ -4,12 +4,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
 import uz.gateway.dto.auth.signIn.response.ResponseSignIn;
 import uz.gateway.dto.auth.signIn.response.ResponseSignInVerify;
 import uz.gateway.dto.users.admin.users.response.ResponseGetUsers;
 import uz.gateway.services.auth.AuthService;
-import uz.gateway.services.users.domains.AdminController;
+import uz.gateway.services.users.controllers.AdminController;
 import uz.gateway.testdata.pojo.Client;
 import uz.gateway.testdata.pojo.Server;
 import uz.gateway.testdata.pojo.TestData;
@@ -23,7 +25,14 @@ import java.util.List;
  * Класс для работы с тестовыми данными в resources
  */
 @Slf4j
+@Component
 public class TestDataProvider {
+
+    @Autowired
+    AuthService authService;
+
+    @Autowired
+    AdminController adminController;
 
     static TestData testData = readTestData();
 
@@ -80,8 +89,6 @@ public class TestDataProvider {
      */
     public void deleteUserByPhone(String phoneNumber) {
         log.info("[PRECONDITION] Удаление пользователя с номером телефона {}", phoneNumber);
-        AuthService authService = new AuthService();
-        AdminController adminStep = new AdminController();
         User admin = getUserByAlias("admin");
         Response responseSignIn = authService.postSignIn(
                 admin.getPhoneNumber(), admin.getPassword(), admin.getDeviceId());
@@ -92,13 +99,13 @@ public class TestDataProvider {
                 admin.getOtp()));
         ResponseSignInVerify response = responseSignInVerify.as(ResponseSignInVerify.class);
 
-        Response responseGetUsers = adminStep.getUsers(response.getData().getAccessToken());
+        Response responseGetUsers = adminController.getUsers(response.getData().getAccessToken());
         Assert.assertEquals(200, responseGetUsers.getStatusCode());
 
         ResponseGetUsers.Data.Content user = getUserByPhone(
                 phoneNumber, responseGetUsers.getBody().as(ResponseGetUsers.class));
         if (user != null) {
-            adminStep.deleteUser(response.getData().getAccessToken(), user.getId());
+            adminController.deleteUser(response.getData().getAccessToken(), user.getId());
         } else {
             log.error(String.format("Пользователь с phoneNumber=[%s] не найден", phoneNumber));
         }

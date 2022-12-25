@@ -3,6 +3,8 @@ package uz.gateway.services.auth;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
 import uz.gateway.dto.auth.signIn.response.ResponseSignIn;
 import uz.gateway.dto.auth.signIn.response.ResponseSignInVerify;
@@ -18,7 +20,11 @@ import uz.gateway.testdata.pojo.User;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
-public class AuthServiceStep extends AuthService {
+@Service
+public class AuthServiceStep {
+
+    @Autowired
+    AuthService authService;
 
     //Срок действия OTP в миллисекундах
     public final int otpTimer = 60000;
@@ -26,8 +32,12 @@ public class AuthServiceStep extends AuthService {
     @Step("[ШАГ] Авторизация зарегистрированного пользователя")
     public ResponseSignIn signInStep(User user) {
         log.info("[ШАГ] Авторизация зарегистрированного пользователя");
-        Response response = postSignIn(
+        Response response = authService.postSignIn(
                         user.getPhoneNumber(), user.getPassword(), user.getDeviceId());
+
+//        Response responseDemo = postSignIn(
+//                        user.getPhoneNumber(), user.getPassword(), user.getDeviceId());
+//        responseDemo.then().statusCode(200);
 
         assertEquals(200, response.getStatusCode(),
                 "При авторизации вернулся неверный статус код");
@@ -45,7 +55,7 @@ public class AuthServiceStep extends AuthService {
     @Step("[ШАГ] Авторизация НЕ зарегистрированного пользователя")
     public void signInInvalidPhoneStep(User user) {
         log.info("[ШАГ] Авторизация НЕ зарегистрированного пользователя");
-        Response response = postSignIn(
+        Response response = authService.postSignIn(
                 user.getPhoneNumber(), user.getPassword(), user.getDeviceId());
 
         assertEquals(403, response.getStatusCode(),
@@ -60,7 +70,7 @@ public class AuthServiceStep extends AuthService {
     @Step("[ШАГ] Авторизация с НЕверным паролем")
     public void signInInvalidPasswordStep(User user, String password) {
         log.info("[ШАГ] Авторизация зарегистрированного пользователя с НЕверным паролем");
-        Response response = postSignIn(
+        Response response = authService.postSignIn(
                 user.getPhoneNumber(), password, user.getDeviceId());
 
         assertEquals(403, response.getStatusCode(),
@@ -75,7 +85,7 @@ public class AuthServiceStep extends AuthService {
     @Step("[ШАГ] Верификация с верным СМС кодом")
     public ResponseSignInVerify signInVerifyStep(RequestSignInVerify requestSignInVerify) {
         log.info("[ШАГ] Верификация с верным СМС кодом");
-        Response response = postSignInVerify(requestSignInVerify);
+        Response response = authService.postSignInVerify(requestSignInVerify);
 
         assertEquals(200, response.getStatusCode(),
                 String.format("При верификации СМС кода вернулся %s статус код", response.getStatusCode()));
@@ -95,7 +105,7 @@ public class AuthServiceStep extends AuthService {
     @Step("[ШАГ] Верификация с неверным СМС кодом")
     public void signInVerifyInvalidOtpStep(RequestSignInVerify requestSignInVerify) {
         log.info("[ШАГ] Верификация с неверным СМС кодом");
-        Response response = postSignInVerify(requestSignInVerify);
+        Response response = authService.postSignInVerify(requestSignInVerify);
 
         assertEquals(400, response.getStatusCode(),
                 String.format("При верификации НЕверного СМС кода вернулся %s статус код", response.getStatusCode()));
@@ -115,7 +125,7 @@ public class AuthServiceStep extends AuthService {
         } catch (InterruptedException e) {
             throw new RuntimeException("Ошибка при ожидании истечения срока действия СМС кода", e);
         }
-        Response response = postSignInVerify(requestSignInVerify);
+        Response response = authService.postSignInVerify(requestSignInVerify);
 
         assertEquals(400, response.getStatusCode());
         ResponseSignInVerify responseSignInVerify = response.getBody().as(ResponseSignInVerify.class);
@@ -128,7 +138,7 @@ public class AuthServiceStep extends AuthService {
     @Step("[ШАГ] Регистрация нового пользователя")
     public ResponseSignUp signUpStep(RequestSignUp requestSignUp) {
         log.info("[ШАГ] Регистрация нового пользователя");
-        Response response = postSignUp(requestSignUp);
+        Response response = authService.postSignUp(requestSignUp);
 
         assertEquals(200, response.getStatusCode());
         ResponseSignUp responseSignUp = response.getBody().as(ResponseSignUp.class);
@@ -145,7 +155,7 @@ public class AuthServiceStep extends AuthService {
     @Step("[ШАГ] Регистрация с зарегистрированным номером телефона")
     public void signUpRegisteredPhoneStep(RequestSignUp requestSignUp) {
         log.info("[ШАГ] Регистрация с зарегистрированным номером телефона");
-        Response response = postSignUp(requestSignUp);
+        Response response = authService.postSignUp(requestSignUp);
 
         assertEquals(409, response.getStatusCode(),
                 "При регистрации с зарегистрированным телефоном пришел неверный статус код");
@@ -159,7 +169,7 @@ public class AuthServiceStep extends AuthService {
     @Step("[ШАГ] Регистрация. Верификация СМС кода")
     public void signUpVerifyStep(RequestSignUpVerify requestSignUpVerify) {
         log.info("[ШАГ] Регистрация. Верификация СМС кода");
-        Response response = postSignUpVerify(requestSignUpVerify);
+        Response response = authService.postSignUpVerify(requestSignUpVerify);
 
         assertEquals(200, response.getStatusCode());
     }
@@ -167,7 +177,7 @@ public class AuthServiceStep extends AuthService {
     @Step("[ШАГ] Регистрация с НЕверным СМС кодом")
     public void signUpVerifyInvalidOtpStep(RequestSignUpVerify requestSignUpVerify) {
         log.info("[ШАГ] Регистрация с НЕверным СМС кодом");
-        Response response = postSignUpVerify(requestSignUpVerify);
+        Response response = authService.postSignUpVerify(requestSignUpVerify);
 
         assertEquals(400, response.getStatusCode(),
                 "Верификация НЕверного СМС кода вернуло неверный статус код");
@@ -187,7 +197,7 @@ public class AuthServiceStep extends AuthService {
         } catch (InterruptedException e) {
             throw new RuntimeException("Ошибка при ожидании истечения срока действия СМС кода", e);
         }
-        Response response = postSignUpVerify(requestSignUpVerify);
+        Response response = authService.postSignUpVerify(requestSignUpVerify);
 
         assertEquals(400, response.getStatusCode(),
                 "Запрос Верификация OTP с протухшим СМС кодом вернула неверный статус код");
@@ -202,7 +212,7 @@ public class AuthServiceStep extends AuthService {
     public ResponseSignUpSetPassword signUpSetPasswordStep(
             int expectedStatusCode, RequestSignUpSetPassoword requestSignUpSetPassoword) {
         log.info("[ШАГ] Регистрация. Установка пароля");
-        Response response = postSignUpSetPassword(requestSignUpSetPassoword);
+        Response response = authService.postSignUpSetPassword(requestSignUpSetPassoword);
 
         assertEquals(expectedStatusCode, response.getStatusCode());
         ResponseSignUpSetPassword responseSignUpSetPassword = response.getBody().as(ResponseSignUpSetPassword.class);
@@ -221,7 +231,7 @@ public class AuthServiceStep extends AuthService {
     public void signUpInvalidPasswordStep(
             RequestSignUpSetPassoword requestSignUpSetPassoword, String error) {
         log.info("[ШАГ] Регистрация с неверным паролем");
-        Response response = postSignUpSetPassword(requestSignUpSetPassoword);
+        Response response = authService.postSignUpSetPassword(requestSignUpSetPassoword);
 
         assertEquals(400, response.getStatusCode(),
                 "При ошибке в ответе вернулся неверный статус код");

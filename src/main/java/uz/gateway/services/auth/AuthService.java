@@ -3,7 +3,9 @@ package uz.gateway.services.auth;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import uz.gateway.GatewayContainer;
 import uz.gateway.GatewayClient;
 import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
 import uz.gateway.dto.auth.signUp.request.RequestSignUp;
@@ -12,9 +14,13 @@ import uz.gateway.dto.auth.signUp.request.RequestSignUpVerify;
 
 import static io.restassured.RestAssured.given;
 
-@Service
+
 @Slf4j
+@Service
 public class AuthService extends GatewayClient {
+
+    @Autowired
+    GatewayContainer gatewayContainer;
 
     public Response postSignIn(String phoneNumber, String password, String deviceId) {
         log.info("POST запрос {}", Path.SIGN_IN.getPath());
