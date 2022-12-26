@@ -375,6 +375,22 @@ public class AuthServiceStep {
                 .statusCode(SC_OK);
     }
 
+    @Step("Step | Сброс пароля. Неверный пароль")
+    public GatewayResponse resetPasswordInvalidPasswordStep(
+            ResetPasswordSetPasswordRequest requestBody, String error) {
+        log.info("Step | Сброс пароля. Неверный пароль");
+        GatewayResponse response = authService.postResetPasswordSetPassword(requestBody)
+                .statusCode(SC_BAD_REQUEST)
+                .contentType(ContentType.JSON)
+                .extract().as(GatewayResponse.class);
+
+        assertNull(response.getData(),
+                "Сброс пароля. Неверный пароль. Поле data не null");
+        assertEquals(error, response.getErrorMessage());
+
+        return response;
+    }
+
     @Step("Precondition | Регистрация. Удаление пользователя по номеру телефона")
     public void deleteUserByPhonePrecondition(String phoneNumber, User admin) {
         log.info("Precondition | Удаление пользователя по номеру телефона");

@@ -275,7 +275,7 @@ public class AuthTests extends GatewayTest {
         @Test
         @AllureId("4829")
         @Tag("negative")
-        @DisplayName("Reset password | Неверный СМС код")
+        @DisplayName("Reset password | Неверная длина СМС кода")
         public void resetPasswordInvalidLengthOtpTest() {
 
             User user = testDataProvider.getUserByAlias("reset");
@@ -284,6 +284,33 @@ public class AuthTests extends GatewayTest {
                     user.getPhoneNumber(), "captcha"));
             authServiceStep.resetPasswordVerifyInvalidLengthOtpStep(new ResetPasswordVerifyRequest(
                     resetPasswordResponse.getData().getConfirmationKey(), "99999"));
+        }
+
+        @Test
+        @AllureId("4830")
+        @Tag("negative")
+        @DisplayName("Reset password | Неверный пароль")
+        public void resetPasswordInvalidPasswordTest() {
+
+            User user = testDataProvider.getUserByAlias("reset");
+
+            Map<String, String> invalidPasswords = Map.of(
+                    SignUpPasswordError.TOO_SHORT.getError(), "asdf123",
+                    SignUpPasswordError.TOO_LONG.getError(), "a12345678901234567890",
+                    SignUpPasswordError.INVALID_CHARACTERS.getError(), "фあasdf1234",
+                    SignUpPasswordError.NO_LETTER.getError(), "12345678",
+                    SignUpPasswordError.NO_DIGIT.getError(), "asdfghjk"
+            );
+
+            ResetPasswordResponse resetPasswordResponse = authServiceStep.resetPasswordStep(new ResetPasswordRequest(
+                    user.getPhoneNumber(), "captcha"));
+            authServiceStep.resetPasswordVerifyStep(new ResetPasswordVerifyRequest(
+                    resetPasswordResponse.getData().getConfirmationKey(), user.getOtp()));
+            for (var entry : invalidPasswords.entrySet()) {
+                authServiceStep.resetPasswordInvalidPasswordStep(new ResetPasswordSetPasswordRequest(
+                                resetPasswordResponse.getData().getConfirmationKey(), entry.getValue()),
+                        entry.getKey());
+            }
         }
     }
 }
