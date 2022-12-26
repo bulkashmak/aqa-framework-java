@@ -3,7 +3,7 @@ package uz.tests.gateway.auth;
 import io.qameta.allure.AllureId;
 import io.qameta.allure.Owner;
 import org.junit.jupiter.api.*;
-import uz.tests.gateway.GatewayTest;
+import org.springframework.beans.factory.annotation.Autowired;
 import uz.annotations.allure.Epic;
 import uz.annotations.allure.Feature;
 import uz.annotations.allure.Story;
@@ -16,6 +16,7 @@ import uz.gateway.dto.auth.signUp.response.ResponseSignUp;
 import uz.gateway.services.auth.AuthServiceStep;
 import uz.gateway.services.auth.enums.SignUpPasswordError;
 import uz.gateway.testdata.pojo.User;
+import uz.tests.gateway.GatewayTest;
 
 import java.util.Map;
 
@@ -23,7 +24,8 @@ import java.util.Map;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AuthTests extends GatewayTest {
 
-    AuthServiceStep authService = new AuthServiceStep();
+    @Autowired
+    AuthServiceStep authServiceStep;
 
     @Nested
     @Owner("Bulat Maskurov")
@@ -40,9 +42,9 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("default");
 
-            ResponseSignIn responseSignIn = authService.signInStep(user);
+            ResponseSignIn responseSignIn = authServiceStep.signInStep(user);
 
-            authService.signInVerifyStep(new RequestSignInVerify(
+            authServiceStep.signInVerifyStep(new RequestSignInVerify(
                     user.getDeviceId(),
                     responseSignIn.getData().getConfirmationKey(),
                     user.getOtp()));
@@ -57,7 +59,7 @@ public class AuthTests extends GatewayTest {
             User user = testDataProvider.getUserByAlias("delete");
             testDataProvider.deleteUserByPhone(user.getPhoneNumber());
 
-            authService.signInInvalidPhoneStep(user);
+            authServiceStep.signInInvalidPhoneStep(user);
         }
 
         @Test
@@ -68,8 +70,8 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("default");
 
-            ResponseSignIn responseSignIn = authService.signInStep(user);
-            authService.signInVerifyInvalidOtpStep(new RequestSignInVerify(
+            ResponseSignIn responseSignIn = authServiceStep.signInStep(user);
+            authServiceStep.signInVerifyInvalidOtpStep(new RequestSignInVerify(
                     user.getDeviceId(),
                     responseSignIn.getData().getConfirmationKey(),
                     "000000"));
@@ -83,7 +85,7 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("default");
 
-            authService.signInInvalidPasswordStep(user, user.getPassword() + 1);
+            authServiceStep.signInInvalidPasswordStep(user, user.getPassword() + 1);
         }
 
         @Test
@@ -94,8 +96,8 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("default");
 
-            ResponseSignIn responseSignIn = authService.signInStep(user);
-            authService.signInVerifyOtpExpiredStep(new RequestSignInVerify(
+            ResponseSignIn responseSignIn = authServiceStep.signInStep(user);
+            authServiceStep.signInVerifyOtpExpiredStep(new RequestSignInVerify(
                     user.getDeviceId(),
                     responseSignIn.getData().getConfirmationKey(),
                     user.getOtp()));
@@ -118,14 +120,13 @@ public class AuthTests extends GatewayTest {
             User user = testDataProvider.getUserByAlias("user");
             testDataProvider.deleteUserByPhone(user.getPhoneNumber());
 
-            ResponseSignUp responseSignUp = authService.signUpStep(new RequestSignUp(
+            ResponseSignUp responseSignUp = authServiceStep.signUpStep(new RequestSignUp(
                     user.getPhoneNumber(), "captcha"));
 
-            authService.signUpVerifyStep(new RequestSignUpVerify(
+            authServiceStep.signUpVerifyStep(new RequestSignUpVerify(
                     responseSignUp.getData().getConfirmationKey(), user.getOtp()));
 
-            authService.signUpSetPasswordStep(
-                    200,
+            authServiceStep.signUpSetPasswordStep(
                     new RequestSignUpSetPassoword(
                             responseSignUp.getData().getConfirmationKey(),
                             user.getPassword()));
@@ -139,7 +140,7 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("user");
 
-            authService.signUpRegisteredPhoneStep(new RequestSignUp(
+            authServiceStep.signUpRegisteredPhoneStep(new RequestSignUp(
                     user.getPhoneNumber(), "captcha"));
         }
 
@@ -152,9 +153,9 @@ public class AuthTests extends GatewayTest {
             User user = testDataProvider.getUserByAlias("delete");
             testDataProvider.deleteUserByPhone(user.getPhoneNumber());
 
-            ResponseSignUp responseSignUp = authService.signUpStep(new RequestSignUp(
+            ResponseSignUp responseSignUp = authServiceStep.signUpStep(new RequestSignUp(
                     user.getPhoneNumber(), "captcha"));
-            authService.signUpVerifyInvalidOtpStep(new RequestSignUpVerify(
+            authServiceStep.signUpVerifyInvalidOtpStep(new RequestSignUpVerify(
                     responseSignUp.getData().getConfirmationKey(), "000000"));
         }
 
@@ -167,9 +168,9 @@ public class AuthTests extends GatewayTest {
             User user = testDataProvider.getUserByAlias("delete");
             testDataProvider.deleteUserByPhone(user.getPhoneNumber());
 
-            ResponseSignUp responseSignUp = authService.signUpStep(new RequestSignUp(
+            ResponseSignUp responseSignUp = authServiceStep.signUpStep(new RequestSignUp(
                     user.getPhoneNumber(), "captcha"));
-            authService.signUpVerifyExpiredOtpStep(new RequestSignUpVerify(
+            authServiceStep.signUpVerifyExpiredOtpStep(new RequestSignUpVerify(
                     responseSignUp.getData().getConfirmationKey(), user.getOtp()));
         }
 
@@ -190,16 +191,16 @@ public class AuthTests extends GatewayTest {
                     SignUpPasswordError.NO_DIGIT.getError(), "asdfghjk"
             );
 
-            ResponseSignUp responseSignUp = authService.signUpStep(new RequestSignUp(
+            ResponseSignUp responseSignUp = authServiceStep.signUpStep(new RequestSignUp(
                     user.getPhoneNumber(), "captcha"));
 
-            authService.signUpVerifyStep(new RequestSignUpVerify(
+            authServiceStep.signUpVerifyStep(new RequestSignUpVerify(
                     responseSignUp.getData().getConfirmationKey(), user.getOtp()));
 
             for (var entry : invalidPasswords.entrySet()) {
-                authService.signUpInvalidPasswordStep(new RequestSignUpSetPassoword(
-                        responseSignUp.getData().getConfirmationKey(),
-                        entry.getValue()),
+                authServiceStep.signUpInvalidPasswordStep(new RequestSignUpSetPassoword(
+                                responseSignUp.getData().getConfirmationKey(),
+                                entry.getValue()),
                         entry.getKey());
             }
         }

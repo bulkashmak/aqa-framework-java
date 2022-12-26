@@ -1,5 +1,6 @@
 package uz.tests.gateway;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import uz.DboB2bApplication;
 import uz.gateway.testdata.TestDataProvider;
@@ -7,8 +8,8 @@ import uz.gateway.testdata.TestDataProvider;
 @SpringBootTest(classes = DboB2bApplication.class)
 public abstract class GatewayTest {
 
-    protected TestDataProvider testDataProvider = new TestDataProvider();
-
+    @Autowired
+    protected TestDataProvider testDataProvider;
 
 //    @BeforeAll
 //    public static void setUp() {
