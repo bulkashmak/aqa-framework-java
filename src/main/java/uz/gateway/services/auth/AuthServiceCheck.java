@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uz.gateway.GatewayContainer;
-import uz.gateway.dto.users.admin.users.response.ResponseGetUsers;
+import uz.gateway.dto.users.admin.users.response.GetUsersResponse;
 import uz.gateway.services.users.UsersServiceStep;
 import uz.gateway.testdata.pojo.User;
 
@@ -28,8 +28,8 @@ public class AuthServiceCheck {
     public void userCreatedCheck(User expectedUser, User admin) {
         log.info("CHECK | Пользователь создан в БД");
         authServiceStep.signInE2eStep(admin);
-        ResponseGetUsers responseGetUsers = usersServiceStep.getUsersStep();
-        assertNotNull(usersServiceStep.getUserByPhone(expectedUser.getPhoneNumber(), responseGetUsers),
+        GetUsersResponse getUsersResponse = usersServiceStep.getUsersStep();
+        assertNotNull(usersServiceStep.getUserByPhone(expectedUser.getPhoneNumber(), getUsersResponse),
                 String.format("Пользователь с номером телефона %s не найден в списке пользователей",
                         expectedUser.getPhoneNumber()));
     }

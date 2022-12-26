@@ -5,13 +5,13 @@ import io.restassured.response.ValidatableResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uz.gateway.GatewayClient;
-import uz.gateway.dto.auth.resetPassword.request.RequestResetPassword;
-import uz.gateway.dto.auth.resetPassword.request.RequestResetPasswordSetPassword;
-import uz.gateway.dto.auth.resetPassword.request.RequestResetPasswordVerify;
-import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
-import uz.gateway.dto.auth.signUp.request.RequestSignUp;
-import uz.gateway.dto.auth.signUp.request.RequestSignUpSetPassoword;
-import uz.gateway.dto.auth.signUp.request.RequestSignUpVerify;
+import uz.gateway.dto.auth.resetPassword.request.ResetPasswordRequest;
+import uz.gateway.dto.auth.resetPassword.request.ResetPasswordSetPasswordRequest;
+import uz.gateway.dto.auth.resetPassword.request.ResetPasswordVerifyRequest;
+import uz.gateway.dto.auth.signIn.request.SignInVerifyRequest;
+import uz.gateway.dto.auth.signUp.request.SignUpRequest;
+import uz.gateway.dto.auth.signUp.request.SignUpSetPasswordRequest;
+import uz.gateway.dto.auth.signUp.request.SignUpVerifyRequest;
 
 import static io.restassured.RestAssured.given;
 
@@ -33,7 +33,7 @@ public class AuthService extends GatewayClient {
                 .then();
     }
 
-    public ValidatableResponse postSignInVerify(RequestSignInVerify requestBody) {
+    public ValidatableResponse postSignInVerify(SignInVerifyRequest requestBody) {
         log.info("POST запрос {}", Path.SIGN_IN_VERIFY.getPath());
         return given()
                 .spec(defaultSpec)
@@ -43,7 +43,7 @@ public class AuthService extends GatewayClient {
                 .then();
     }
 
-    public ValidatableResponse postSignUp(RequestSignUp requestBody) {
+    public ValidatableResponse postSignUp(SignUpRequest requestBody) {
         log.info("POST запрос {}", Path.SIGN_UP.getPath());
         return given()
                 .spec(defaultSpec)
@@ -53,7 +53,7 @@ public class AuthService extends GatewayClient {
                 .then();
     }
 
-    public ValidatableResponse postSignUpVerify(RequestSignUpVerify requestBody) {
+    public ValidatableResponse postSignUpVerify(SignUpVerifyRequest requestBody) {
         log.info("POST запрос {}", Path.SIGN_UP_VERIFY.getPath());
         return given()
                 .spec(defaultSpec)
@@ -63,7 +63,7 @@ public class AuthService extends GatewayClient {
                 .then();
     }
 
-    public ValidatableResponse postSignUpSetPassword(RequestSignUpSetPassoword requestBody) {
+    public ValidatableResponse postSignUpSetPassword(SignUpSetPasswordRequest requestBody) {
         log.info("POST запрос {}", Path.SIGN_UP_SET_PASSWORD.getPath());
         return given()
                 .spec(defaultSpec)
@@ -73,7 +73,7 @@ public class AuthService extends GatewayClient {
                 .then();
     }
 
-    public ValidatableResponse postResetPassword(RequestResetPassword requestBody) {
+    public ValidatableResponse postResetPassword(ResetPasswordRequest requestBody) {
         log.info("POST запрос {}", Path.RESET_PASSWORD.getPath());
         return given()
                 .spec(defaultSpec)
@@ -83,7 +83,7 @@ public class AuthService extends GatewayClient {
                 .then();
     }
 
-    public ValidatableResponse postResetPasswordVerify(RequestResetPasswordVerify requestBody) {
+    public ValidatableResponse postResetPasswordVerify(ResetPasswordVerifyRequest requestBody) {
         log.info("POST запрос {}", Path.RESET_PASSWORD_VERIFY.getPath());
         return given()
                 .spec(defaultSpec)
@@ -93,7 +93,7 @@ public class AuthService extends GatewayClient {
                 .then();
     }
 
-    public ValidatableResponse postResetPasswordSetPassword(RequestResetPasswordSetPassword requestBody) {
+    public ValidatableResponse postResetPasswordSetPassword(ResetPasswordSetPasswordRequest requestBody) {
         log.info("POST запрос {}", Path.RESET_PASSWORD_SET_PASSWORD.getPath());
         return given()
                 .spec(defaultSpec)

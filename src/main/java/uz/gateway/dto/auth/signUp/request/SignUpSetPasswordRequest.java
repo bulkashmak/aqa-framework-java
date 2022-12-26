@@ -1,4 +1,4 @@
-package uz.gateway.dto.auth.resetPassword.request;
+package uz.gateway.dto.auth.signUp.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequestResetPasswordSetPassword {
+public class SignUpSetPasswordRequest {
 
     @JsonProperty("confirmationKey")
-    public String confirmationKey;
+    private String confirmationKey;
     @JsonProperty("password")
-    public String password;
+    private String password;
 }

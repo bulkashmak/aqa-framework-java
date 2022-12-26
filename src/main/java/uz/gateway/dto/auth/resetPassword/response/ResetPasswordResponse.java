@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseResetPassword {
+public class ResetPasswordResponse {
 
     @JsonProperty("data")
     public Data data;

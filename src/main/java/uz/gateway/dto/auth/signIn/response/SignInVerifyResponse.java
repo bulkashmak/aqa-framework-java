@@ -1,18 +1,17 @@
-package uz.gateway.dto.auth.signUp.response;
+package uz.gateway.dto.auth.signIn.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uz.gateway.dto.auth.signIn.response.ResponseSignIn;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseSignUp {
+public class SignInVerifyResponse {
 
     @JsonProperty("data")
-    private ResponseSignIn.Data data;
+    private Data data;
     @JsonProperty("errorMessage")
     private String errorMessage;
     @JsonProperty("timestamp")
@@ -20,9 +19,13 @@ public class ResponseSignUp {
 
     @lombok.Data
     public static class Data {
-        @JsonProperty("ttl")
-        private long ttl;
-        @JsonProperty("confirmationKey")
-        private String confirmationKey;
+        @JsonProperty("accessToken")
+        String accessToken;
+        @JsonProperty("refreshToken")
+        String refreshToken;
+        @JsonProperty("refreshTokenExp")
+        Long refreshTokenExp;
+        @JsonProperty("accessTokenType")
+        String accessTokenType;
     }
 }

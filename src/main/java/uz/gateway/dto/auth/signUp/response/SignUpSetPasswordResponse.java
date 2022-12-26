@@ -1,17 +1,18 @@
-package uz.gateway.dto.auth.signIn.response;
+package uz.gateway.dto.auth.signUp.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import uz.gateway.dto.auth.signIn.response.SignInVerifyResponse;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseSignInVerify {
+public class SignUpSetPasswordResponse {
 
     @JsonProperty("data")
-    private Data data;
+    private SignInVerifyResponse.Data data;
     @JsonProperty("errorMessage")
     private String errorMessage;
     @JsonProperty("timestamp")

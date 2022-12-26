@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequestResetPasswordVerify {
+public class ResetPasswordRequest {
 
-    @JsonProperty("confirmationKey")
-    public String confirmationKey;
-    @JsonProperty("code")
-    public String code;
+    @JsonProperty("phoneNumber")
+    private String phoneNumber;
+    @JsonProperty("captcha")
+    private String captcha;
 }
