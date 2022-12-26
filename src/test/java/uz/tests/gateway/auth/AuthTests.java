@@ -7,6 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uz.annotations.allure.Epic;
 import uz.annotations.allure.Feature;
 import uz.annotations.allure.Story;
+import uz.gateway.dto.auth.resetPassword.request.RequestResetPassword;
+import uz.gateway.dto.auth.resetPassword.request.RequestResetPasswordSetPassword;
+import uz.gateway.dto.auth.resetPassword.request.RequestResetPasswordVerify;
+import uz.gateway.dto.auth.resetPassword.response.ResponseResetPassword;
 import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
 import uz.gateway.dto.auth.signIn.response.ResponseSignIn;
 import uz.gateway.dto.auth.signUp.request.RequestSignUp;
@@ -16,7 +20,6 @@ import uz.gateway.dto.auth.signUp.response.ResponseSignUp;
 import uz.gateway.services.auth.AuthServiceCheck;
 import uz.gateway.services.auth.AuthServiceStep;
 import uz.gateway.services.auth.enums.SignUpPasswordError;
-import uz.gateway.services.users.UsersServiceStep;
 import uz.gateway.testdata.pojo.User;
 import uz.tests.gateway.GatewayTest;
 
@@ -31,11 +34,9 @@ public class AuthTests extends GatewayTest {
     @Autowired
     AuthServiceCheck authServiceCheck;
 
-    @Autowired
-    UsersServiceStep usersServiceStep;
-
     @Nested
     @Owner("Bulat Maskurov")
+    @DisplayName("Sign-in tests")
     @Epic("Gateway API")
     @Feature("Auth service")
     @Story("Sign-in")
@@ -64,7 +65,7 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("delete");
             User admin = testDataProvider.getUserByAlias("admin");
-            usersServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
 
             authServiceStep.signInInvalidPhoneStep(user);
         }
@@ -113,6 +114,7 @@ public class AuthTests extends GatewayTest {
 
     @Nested
     @Owner("Bulat Maskurov")
+    @DisplayName("Sign-up tests")
     @Epic("Gateway API")
     @Feature("Auth service")
     @Story("Sign-up")
@@ -126,7 +128,7 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("user");
             User admin = testDataProvider.getUserByAlias("admin");
-            usersServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
 
             ResponseSignUp responseSignUp = authServiceStep.signUpStep(new RequestSignUp(
                     user.getPhoneNumber(), "captcha"));
@@ -160,7 +162,7 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("delete");
             User admin = testDataProvider.getUserByAlias("admin");
-            usersServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
 
             ResponseSignUp responseSignUp = authServiceStep.signUpStep(new RequestSignUp(
                     user.getPhoneNumber(), "captcha"));
@@ -176,7 +178,7 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("delete");
             User admin = testDataProvider.getUserByAlias("admin");
-            usersServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
 
             ResponseSignUp responseSignUp = authServiceStep.signUpStep(new RequestSignUp(
                     user.getPhoneNumber(), "captcha"));
@@ -192,7 +194,7 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("delete");
             User admin = testDataProvider.getUserByAlias("admin");
-            usersServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
 
             Map<String, String> invalidPasswords = Map.of(
                     SignUpPasswordError.TOO_SHORT.getError(), "asdf123",
@@ -212,6 +214,34 @@ public class AuthTests extends GatewayTest {
                                 entry.getValue()),
                         entry.getKey());
             }
+        }
+    }
+
+    @Nested
+    @Owner("Bulat Maskurov")
+    @DisplayName("Reset password tests")
+    @Epic("Gateway API")
+    @Feature("Auth service")
+    @Story("Reset password")
+    public class ResetPasswordTests {
+
+        @Test
+        @AllureId("2362")
+        @Tag("positive")
+        @DisplayName("Reset password | Валидные данные")
+        public void resetPasswordTest() {
+
+            User user = testDataProvider.getUserByAlias("reset");
+            authServiceStep.resetPasswordPrecondition(user, user.getPassword() + 1);
+
+            ResponseResetPassword responseResetPassword = authServiceStep.resetPasswordStep(new RequestResetPassword(
+                    user.getPhoneNumber(), "captcha"));
+            authServiceStep.resetPasswordVerifyStep(new RequestResetPasswordVerify(
+                    responseResetPassword.getData().getConfirmationKey(), user.getOtp()));
+            authServiceStep.resetPasswordSetPasswordStep(new RequestResetPasswordSetPassword(
+                    responseResetPassword.getData().getConfirmationKey(), user.getPassword()));
+
+            authServiceStep.signInE2eStep(user);
         }
     }
 }
