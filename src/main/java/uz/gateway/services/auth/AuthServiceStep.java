@@ -34,9 +34,18 @@ public class AuthServiceStep {
     //Срок действия OTP в миллисекундах
     public final int otpTimer = 60000;
 
-    @Step("[ШАГ] Авторизация зарегистрированного пользователя")
+    @Step("Step | Полная авторизация зарегистрированного пользователя")
+    public ResponseSignInVerify signInE2eStep(User user) {
+        log.info("Step | Полная авторизация зарегистрированного пользователя");
+        return signInVerifyStep(new RequestSignInVerify(
+                user.getDeviceId(),
+                signInStep(user).getData().getConfirmationKey(),
+                user.getOtp()));
+    }
+
+    @Step("Step | Авторизация зарегистрированного пользователя")
     public ResponseSignIn signInStep(User user) {
-        log.info("[ШАГ] Авторизация зарегистрированного пользователя");
+        log.info("Step | Авторизация зарегистрированного пользователя");
         ResponseSignIn response = authService.postSignIn(
                         user.getPhoneNumber(), user.getPassword(), user.getDeviceId())
                 .statusCode(SC_OK)
@@ -53,9 +62,9 @@ public class AuthServiceStep {
         return response;
     }
 
-    @Step("[ШАГ] Авторизация НЕ зарегистрированного пользователя")
+    @Step("Step | Авторизация НЕ зарегистрированного пользователя")
     public void signInInvalidPhoneStep(User user) {
-        log.info("[ШАГ] Авторизация НЕ зарегистрированного пользователя");
+        log.info("Step | Авторизация НЕ зарегистрированного пользователя");
         ResponseSignIn response = authService.postSignIn(
                         user.getPhoneNumber(), user.getPassword(), user.getDeviceId())
                 .statusCode(SC_FORBIDDEN)
@@ -68,9 +77,9 @@ public class AuthServiceStep {
                 "В ответе пустой errorMessage при ошибке");
     }
 
-    @Step("[ШАГ] Авторизация с НЕверным паролем")
+    @Step("Step | Авторизация с НЕверным паролем")
     public void signInInvalidPasswordStep(User user, String password) {
-        log.info("[ШАГ] Авторизация зарегистрированного пользователя с НЕверным паролем");
+        log.info("Step | Авторизация зарегистрированного пользователя с НЕверным паролем");
         ResponseSignIn response = authService.postSignIn(
                         user.getPhoneNumber(), password, user.getDeviceId())
                 .statusCode(SC_FORBIDDEN)
@@ -83,15 +92,18 @@ public class AuthServiceStep {
                 "В ответе пустой errorMessage при ошибке");
     }
 
-    @Step("[ШАГ] Верификация с верным СМС кодом")
+    @Step("Step | Верификация с верным СМС кодом")
     public ResponseSignInVerify signInVerifyStep(RequestSignInVerify requestSignInVerify) {
-        log.info("[ШАГ] Верификация с верным СМС кодом");
+        log.info("Step | Верификация с верным СМС кодом");
         ResponseSignInVerify response = authService.postSignInVerify(requestSignInVerify)
                 .statusCode(SC_OK)
                 .contentType(ContentType.JSON)
                 .extract().as(ResponseSignInVerify.class);
 
-        gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
+        switch (gatewayContainer.getUser().getRole()) {
+            case "admin": gatewayContainer.setAdminAccessToken(response.getData().getAccessToken());
+            case "user": gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
+        }
 
         assertNull(response.getErrorMessage(),
                 "В поле errorMessage вернулась ошибка");
@@ -105,9 +117,9 @@ public class AuthServiceStep {
         return response;
     }
 
-    @Step("[ШАГ] Верификация с неверным СМС кодом")
+    @Step("Step | Верификация с неверным СМС кодом")
     public void signInVerifyInvalidOtpStep(RequestSignInVerify requestSignInVerify) {
-        log.info("[ШАГ] Верификация с неверным СМС кодом");
+        log.info("Step | Верификация с неверным СМС кодом");
         ResponseSignInVerify response = authService.postSignInVerify(requestSignInVerify)
                 .statusCode(SC_BAD_REQUEST)
                 .contentType(ContentType.JSON)
@@ -119,9 +131,9 @@ public class AuthServiceStep {
                 "В ответе нет errorMessage");
     }
 
-    @Step("[ШАГ] Верификация с просроченным СМС кодом")
+    @Step("Step | Верификация с просроченным СМС кодом")
     public void signInVerifyOtpExpiredStep(RequestSignInVerify requestSignInVerify) {
-        log.info("[ШАГ] Верификация с просроченным СМС кодом");
+        log.info("Step | Верификация с просроченным СМС кодом");
         //todo избавиться от tread.sleep
         try {
             Thread.sleep(otpTimer);
@@ -139,9 +151,9 @@ public class AuthServiceStep {
                 "В ответе неверный errorMessage");
     }
 
-    @Step("[ШАГ] Регистрация нового пользователя")
+    @Step("Step | Регистрация нового пользователя")
     public ResponseSignUp signUpStep(RequestSignUp requestSignUp) {
-        log.info("[ШАГ] Регистрация нового пользователя");
+        log.info("Step | Регистрация нового пользователя");
         ResponseSignUp response = authService.postSignUp(requestSignUp)
                 .statusCode(SC_OK)
                 .contentType(ContentType.JSON)
@@ -157,9 +169,9 @@ public class AuthServiceStep {
         return response;
     }
 
-    @Step("[ШАГ] Регистрация с зарегистрированным номером телефона")
+    @Step("Step | Регистрация с зарегистрированным номером телефона")
     public void signUpRegisteredPhoneStep(RequestSignUp requestSignUp) {
-        log.info("[ШАГ] Регистрация с зарегистрированным номером телефона");
+        log.info("Step | Регистрация с зарегистрированным номером телефона");
         ResponseSignUp response = authService.postSignUp(requestSignUp)
                 .statusCode(SC_CONFLICT)
                 .contentType(ContentType.JSON)
@@ -171,16 +183,16 @@ public class AuthServiceStep {
                 "При ответе с ошибкой вернулось неверное сообщение в поле errorMessage");
     }
 
-    @Step("[ШАГ] Регистрация. Верификация СМС кода")
+    @Step("Step | Регистрация. Верификация СМС кода")
     public void signUpVerifyStep(RequestSignUpVerify requestSignUpVerify) {
-        log.info("[ШАГ] Регистрация. Верификация СМС кода");
+        log.info("Step | Регистрация. Верификация СМС кода");
         authService.postSignUpVerify(requestSignUpVerify)
                 .statusCode(SC_OK);
     }
 
-    @Step("[ШАГ] Регистрация с НЕверным СМС кодом")
+    @Step("Step | Регистрация с НЕверным СМС кодом")
     public void signUpVerifyInvalidOtpStep(RequestSignUpVerify requestSignUpVerify) {
-        log.info("[ШАГ] Регистрация с НЕверным СМС кодом");
+        log.info("Step | Регистрация с НЕверным СМС кодом");
         ResponseSignUpVerify response = authService.postSignUpVerify(requestSignUpVerify)
                 .statusCode(SC_BAD_REQUEST)
                 .contentType(ContentType.JSON)
@@ -192,9 +204,9 @@ public class AuthServiceStep {
                 "Верификация СМС с ошибкой вернуло НЕверное errorMessage");
     }
 
-    @Step("[ШАГ] Верификация с просроченным СМС кодом")
+    @Step("Step | Верификация с просроченным СМС кодом")
     public void signUpVerifyExpiredOtpStep(RequestSignUpVerify requestSignUpVerify) {
-        log.info("[ШАГ] Верификация с просроченным СМС кодом");
+        log.info("Step | Верификация с просроченным СМС кодом");
         //todo избавиться от tread.sleep
         try {
             Thread.sleep(otpTimer);
@@ -212,16 +224,18 @@ public class AuthServiceStep {
                 "Запрос Верификация OTP с протухшим СМС кодом вернула неверное errorMessage");
     }
 
-    @Step("[ШАГ] Регистрация. Установка пароля")
+    @Step("Step | Регистрация. Установка пароля")
     public ResponseSignUpSetPassword signUpSetPasswordStep(RequestSignUpSetPassoword requestSignUpSetPassoword) {
-        log.info("[ШАГ] Регистрация. Установка пароля");
+        log.info("Step | Регистрация. Установка пароля");
         ResponseSignUpSetPassword response = authService.postSignUpSetPassword(requestSignUpSetPassoword)
                 .statusCode(SC_OK)
                 .contentType(ContentType.JSON)
                 .extract().as(ResponseSignUpSetPassword.class);
 
-        gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
-
+        switch (gatewayContainer.getUser().getRole()) {
+            case "admin": gatewayContainer.setAdminAccessToken(response.getData().getAccessToken());
+            case "user": gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
+        }
         assertNull(response.getErrorMessage(),
                 "В поле errorMessage вернулась ошибка");
         assertNotNull(response.getData().getAccessToken(),
@@ -233,10 +247,10 @@ public class AuthServiceStep {
         return response;
     }
 
-    @Step("[ШАГ] Регистрация с неверным паролем")
+    @Step("Step | Регистрация с неверным паролем")
     public void signUpInvalidPasswordStep(
             RequestSignUpSetPassoword requestSignUpSetPassoword, String error) {
-        log.info("[ШАГ] Регистрация с неверным паролем");
+        log.info("Step | Регистрация с неверным паролем");
         ResponseSignUpSetPassword response = authService.postSignUpSetPassword(requestSignUpSetPassoword)
                 .statusCode(SC_BAD_REQUEST)
                 .contentType(ContentType.JSON)

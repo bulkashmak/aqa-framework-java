@@ -16,11 +16,11 @@ public class AdminController extends GatewayClient {
     @Autowired
     GatewayContainer gatewayContainer;
 
-    public ValidatableResponse getUsers(String accessToken) {
+    public ValidatableResponse getUsers() {
         log.info("GET запрос {}", Path.GET_USERS.getPath());
         return given()
                 .spec(defaultSpec)
-                .header("Authorization", String.format("Bearer %s", accessToken))
+                .header("Authorization", String.format("Bearer %s", gatewayContainer.getAdminAccessToken()))
                 .get(Path.GET_USERS.getPath())
                 .then();
     }
@@ -30,6 +30,7 @@ public class AdminController extends GatewayClient {
         String path = String.format(Path.GET_USER.getPath(), userId);
         return given()
                 .spec(defaultSpec)
+                .header("Authorization", String.format("Bearer %s", gatewayContainer.getAdminAccessToken()))
                 .get(path)
                 .then();
     }
@@ -39,16 +40,17 @@ public class AdminController extends GatewayClient {
         String path = String.format(Path.POST_LOCK_USER.getPath(), userId);
         return given()
                 .spec(defaultSpec)
+                .header("Authorization", String.format("Bearer %s", gatewayContainer.getAdminAccessToken()))
                 .post(path)
                 .then();
     }
 
-    public ValidatableResponse deleteUser(String accessToken, int userId) {
+    public ValidatableResponse deleteUser(int userId) {
         log.info("DELETE запрос {}", Path.DELETE_USER.getPath());
         String path = String.format(Path.DELETE_USER.getPath(), userId);
         return given()
                 .spec(defaultSpec)
-                .header("Authorization", String.format("Bearer %s", accessToken))
+                .header("Authorization", String.format("Bearer %s", gatewayContainer.getAdminAccessToken()))
                 .delete(path)
                 .then();
     }
