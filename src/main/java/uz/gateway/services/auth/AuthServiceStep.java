@@ -3,7 +3,7 @@ package uz.gateway.services.auth;
 import io.qameta.allure.Step;
 import io.restassured.http.ContentType;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import uz.gateway.GatewayContainer;
 import uz.gateway.dto.auth.resetPassword.request.RequestResetPassword;
@@ -19,7 +19,9 @@ import uz.gateway.dto.auth.signUp.request.RequestSignUpVerify;
 import uz.gateway.dto.auth.signUp.response.ResponseSignUp;
 import uz.gateway.dto.auth.signUp.response.ResponseSignUpSetPassword;
 import uz.gateway.dto.auth.signUp.response.ResponseSignUpVerify;
+import uz.gateway.dto.users.admin.users.response.ResponseGetUsers;
 import uz.gateway.services.auth.enums.ErrorMessage;
+import uz.gateway.services.users.UsersServiceStep;
 import uz.gateway.testdata.pojo.User;
 
 import static org.apache.hc.core5.http.HttpStatus.*;
@@ -29,11 +31,20 @@ import static org.junit.jupiter.api.Assertions.*;
 @Service
 public class AuthServiceStep {
 
-    @Autowired
+    //    @Autowired
     GatewayContainer gatewayContainer;
 
-    @Autowired
+    //    @Autowired
     AuthService authService;
+
+    //    @Autowired
+    UsersServiceStep usersServiceStep;
+
+    public AuthServiceStep(GatewayContainer gatewayContainer, AuthService authService, @Lazy UsersServiceStep usersServiceStep) {
+        this.gatewayContainer = gatewayContainer;
+        this.authService = authService;
+        this.usersServiceStep = usersServiceStep;
+    }
 
     //Срок действия OTP в миллисекундах
     public final int otpTimer = 60000;
@@ -69,31 +80,33 @@ public class AuthServiceStep {
     @Step("Step | Авторизация НЕ зарегистрированного пользователя")
     public void signInInvalidPhoneStep(User user) {
         log.info("Step | Авторизация НЕ зарегистрированного пользователя");
-        ResponseSignIn response = authService.postSignIn(
+//        ResponseSignIn response =
+        authService.postSignIn(
                         user.getPhoneNumber(), user.getPassword(), user.getDeviceId())
-                .statusCode(SC_FORBIDDEN)
-                .contentType(ContentType.JSON)
-                .extract().as(ResponseSignIn.class);
-
-        assertNull(response.getData(),
-                "В поле data НЕ null при ошибке в ответе");
-        assertNotNull(response.getErrorMessage(),
-                "В ответе пустой errorMessage при ошибке");
+                .statusCode(SC_FORBIDDEN);
+//                .contentType(ContentType.JSON)
+//                .extract().as(ResponseSignIn.class);
+//
+//        assertNull(response.getData(),
+//                "В поле data НЕ null при ошибке в ответе");
+//        assertNotNull(response.getErrorMessage(),
+//                "В ответе пустой errorMessage при ошибке");
     }
 
     @Step("Step | Авторизация с НЕверным паролем")
     public void signInInvalidPasswordStep(User user, String password) {
         log.info("Step | Авторизация зарегистрированного пользователя с НЕверным паролем");
-        ResponseSignIn response = authService.postSignIn(
+//        ResponseSignIn response =
+        authService.postSignIn(
                         user.getPhoneNumber(), password, user.getDeviceId())
-                .statusCode(SC_FORBIDDEN)
-                .contentType(ContentType.JSON)
-                .extract().as(ResponseSignIn.class);
-
-        assertNull(response.getData(),
-                "В поле data НЕ null при ошибке в ответе");
-        assertNotNull(response.getErrorMessage(),
-                "В ответе пустой errorMessage при ошибке");
+                .statusCode(SC_FORBIDDEN);
+//                .contentType(ContentType.JSON)
+//                .extract().as(ResponseSignIn.class);
+//
+//        assertNull(response.getData(),
+//                "В поле data НЕ null при ошибке в ответе");
+//        assertNotNull(response.getErrorMessage(),
+//                "В ответе пустой errorMessage при ошибке");
     }
 
     @Step("Step | Верификация с верным СМС кодом")
@@ -270,6 +283,17 @@ public class AuthServiceStep {
                 "При неверном пароле в ответе вернулся неверный errorMessage");
     }
 
+    @Step("Step | Полный сброс паролял")
+    public void resetPasswordE2eStep(User user, String newPassword) {
+        log.info("Step | Полный сброс паролял");
+        ResponseResetPassword responseResetPassword = resetPasswordStep(new RequestResetPassword(
+                user.getPhoneNumber(), "captcha"));
+        resetPasswordVerifyStep(new RequestResetPasswordVerify(
+                responseResetPassword.getData().getConfirmationKey(), user.getOtp()));
+        resetPasswordSetPasswordStep(new RequestResetPasswordSetPassword(
+                responseResetPassword.getData().getConfirmationKey(), newPassword));
+    }
+
     @Step("Step | Сброс пароля зарегистрированного пользователя")
     public ResponseResetPassword resetPasswordStep(RequestResetPassword requestBody) {
         log.info("Step | Сброс пароля зарегистрированного пользователя");
@@ -300,5 +324,24 @@ public class AuthServiceStep {
         log.info("Step | Сброс пароля. Установка нового пароля");
         authService.postResetPasswordSetPassword(requestBody)
                 .statusCode(SC_OK);
+    }
+
+    @Step("Precondition | Регистрация. Удаление пользователя по номеру телефона")
+    public void deleteUserByPhonePrecondition(String phoneNumber, User admin) {
+        log.info("Precondition | Удаление пользователя по номеру телефона");
+        signInE2eStep(admin);
+//        ResponseGetUsers responseGetUsers = adminController.getUsers()
+//                .statusCode(SC_OK)
+//                .contentType(ContentType.JSON)
+//                .extract().as(ResponseGetUsers.class);
+        ResponseGetUsers responseGetUsers = usersServiceStep.getUsersStep();
+        usersServiceStep.deleteUserByPhone(phoneNumber, responseGetUsers);
+    }
+
+    @Step("Precondition | Сброс пароля")
+    public void resetPasswordPrecondition(User user, String newPassword) {
+        log.info("Precondition | Сброс пароля");
+        resetPasswordE2eStep(user, newPassword);
+        signInInvalidPasswordStep(user, user.getPassword());
     }
 }

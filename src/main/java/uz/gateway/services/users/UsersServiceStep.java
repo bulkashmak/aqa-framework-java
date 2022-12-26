@@ -9,7 +9,6 @@ import uz.gateway.GatewayContainer;
 import uz.gateway.dto.users.admin.users.response.ResponseGetUsers;
 import uz.gateway.services.auth.AuthServiceStep;
 import uz.gateway.services.users.controllers.AdminController;
-import uz.gateway.testdata.pojo.User;
 
 import java.util.List;
 
@@ -55,14 +54,6 @@ public class UsersServiceStep {
         log.info("Step | Удалить пользователя по id");
         adminController.deleteUser(userId)
                 .statusCode(SC_OK);
-    }
-
-    @Step("Precondition | Удаление пользователя по номеру телефона")
-    public void deleteUserByPhonePrecondition(String phoneNumber, User admin) {
-        log.info("Precondition | Удаление пользователя по номеру телефона");
-        authServiceStep.signInE2eStep(admin);
-        ResponseGetUsers responseGetUsers = getUsersStep();
-        deleteUserByPhone(phoneNumber, responseGetUsers);
     }
 
     /*
