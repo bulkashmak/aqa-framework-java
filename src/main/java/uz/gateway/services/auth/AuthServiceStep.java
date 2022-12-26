@@ -6,6 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uz.gateway.GatewayContainer;
+import uz.gateway.dto.auth.resetPassword.request.RequestResetPassword;
+import uz.gateway.dto.auth.resetPassword.request.RequestResetPasswordSetPassword;
+import uz.gateway.dto.auth.resetPassword.request.RequestResetPasswordVerify;
+import uz.gateway.dto.auth.resetPassword.response.ResponseResetPassword;
 import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
 import uz.gateway.dto.auth.signIn.response.ResponseSignIn;
 import uz.gateway.dto.auth.signIn.response.ResponseSignInVerify;
@@ -101,8 +105,10 @@ public class AuthServiceStep {
                 .extract().as(ResponseSignInVerify.class);
 
         switch (gatewayContainer.getUser().getRole()) {
-            case "admin": gatewayContainer.setAdminAccessToken(response.getData().getAccessToken());
-            case "user": gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
+            case "admin":
+                gatewayContainer.setAdminAccessToken(response.getData().getAccessToken());
+            case "user":
+                gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
         }
 
         assertNull(response.getErrorMessage(),
@@ -233,8 +239,10 @@ public class AuthServiceStep {
                 .extract().as(ResponseSignUpSetPassword.class);
 
         switch (gatewayContainer.getUser().getRole()) {
-            case "admin": gatewayContainer.setAdminAccessToken(response.getData().getAccessToken());
-            case "user": gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
+            case "admin":
+                gatewayContainer.setAdminAccessToken(response.getData().getAccessToken());
+            case "user":
+                gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
         }
         assertNull(response.getErrorMessage(),
                 "В поле errorMessage вернулась ошибка");
@@ -260,5 +268,37 @@ public class AuthServiceStep {
                 "При ошибке в ответе поле data не пустое");
         assertEquals(error, response.getErrorMessage(),
                 "При неверном пароле в ответе вернулся неверный errorMessage");
+    }
+
+    @Step("Step | Сброс пароля зарегистрированного пользователя")
+    public ResponseResetPassword resetPasswordStep(RequestResetPassword requestBody) {
+        log.info("Step | Сброс пароля зарегистрированного пользователя");
+        ResponseResetPassword response = authService.postResetPassword(requestBody)
+                .statusCode(SC_OK)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseResetPassword.class);
+
+        assertNull(response.getErrorMessage(),
+                "При сбросе пароля вернулся errorMessage");
+        assertNotNull(response.getData(),
+                "При сбросе пароля вернулся пустой data");
+        assertNotNull(response.getData().getConfirmationKey(),
+                "При сбросе пароля вернулся пустой confirmationKey");
+
+        return response;
+    }
+
+    @Step("Step | Сброс пароля. Верификация СМС кода")
+    public void resetPasswordVerifyStep(RequestResetPasswordVerify requestBody) {
+        log.info("Step | Сброс пароля. Верификация СМС кода");
+        authService.postResetPasswordVerify(requestBody)
+                .statusCode(SC_OK);
+    }
+
+    @Step("Step | Сброс пароля. Установка нового пароля")
+    public void resetPasswordSetPasswordStep(RequestResetPasswordSetPassword requestBody) {
+        log.info("Step | Сброс пароля. Установка нового пароля");
+        authService.postResetPasswordSetPassword(requestBody)
+                .statusCode(SC_OK);
     }
 }
