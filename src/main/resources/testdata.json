@@ -17,28 +17,32 @@
       "phoneNumber": "998900000000",
       "password": "admin1234",
       "deviceId": "admin_device_id",
-      "otp": "999999"
+      "otp": "999999",
+      "role": "admin"
     },
     {
       "alias": "user",
       "phoneNumber": "998900000001",
       "password": "user1234",
       "deviceId": "user_device_id",
-      "otp": "999999"
+      "otp": "999999",
+      "role": "user"
     },
     {
       "alias": "default",
       "phoneNumber": "998917771420",
       "password": "uzum2022",
       "deviceId": "bulat_device_id",
-      "otp": "999999"
+      "otp": "999999",
+      "role": "user"
     },
     {
       "alias": "delete",
       "phoneNumber": "998901111111",
       "password": "delete1234",
       "deviceId": "delete_device_id",
-      "otp": "999999"
+      "otp": "999999",
+      "role": "user"
     }
   ]
 }

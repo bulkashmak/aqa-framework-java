@@ -1,15 +1,11 @@
 package uz.gateway.testdata;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.Assert;
-import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
-import uz.gateway.dto.auth.signIn.response.ResponseSignIn;
-import uz.gateway.dto.auth.signIn.response.ResponseSignInVerify;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import uz.gateway.GatewayContainer;
 import uz.gateway.dto.users.admin.users.response.ResponseGetUsers;
-import uz.gateway.services.auth.AuthService;
-import uz.gateway.services.users.domains.AdminDomain;
 import uz.gateway.testdata.pojo.Client;
 import uz.gateway.testdata.pojo.Server;
 import uz.gateway.testdata.pojo.TestData;
@@ -23,7 +19,11 @@ import java.util.List;
  * Класс для работы с тестовыми данными в resources
  */
 @Slf4j
+@Component
 public class TestDataProvider {
+
+    @Autowired
+    GatewayContainer gatewayContainer;
 
     static TestData testData = readTestData();
 
@@ -67,6 +67,7 @@ public class TestDataProvider {
         if (user == null) {
             throw new RuntimeException("Ошибка при чтении user из testdata");
         } else {
+            gatewayContainer.setUser(user);
             return user;
         }
     }
@@ -75,36 +76,7 @@ public class TestDataProvider {
         return testData.getUsers();
     }
 
-    /*
-     * Метод находит и удаляет пользователя по его номеру телефона
-     */
-    public void deleteUserByPhone(String phoneNumber) {
-        log.info("[PRECONDITION] Удаление пользователя с номером телефона {}", phoneNumber);
-        AuthService authService = new AuthService();
-        AdminDomain adminStep = new AdminDomain();
-        User admin = getUserByAlias("admin");
-        Response responseSignIn = authService.postSignIn(
-                admin.getPhoneNumber(), admin.getPassword(), admin.getDeviceId());
-        Assert.assertEquals(200, responseSignIn.getStatusCode());
-        Response responseSignInVerify = authService.postSignInVerify(new RequestSignInVerify(
-                admin.getDeviceId(),
-                responseSignIn.getBody().as(ResponseSignIn.class).getData().getConfirmationKey(),
-                admin.getOtp()));
-        ResponseSignInVerify response = responseSignInVerify.as(ResponseSignInVerify.class);
-
-        Response responseGetUsers = adminStep.getUsers(response.getData().getAccessToken());
-        Assert.assertEquals(200, responseGetUsers.getStatusCode());
-
-        ResponseGetUsers.Data.Content user = getUserByPhone(
-                phoneNumber, responseGetUsers.getBody().as(ResponseGetUsers.class));
-        if (user != null) {
-            adminStep.deleteUser(response.getData().getAccessToken(), user.getId());
-        } else {
-            log.error(String.format("Пользователь с phoneNumber=[%s] не найден", phoneNumber));
-        }
-    }
-
-    private static ResponseGetUsers.Data.Content getUserByPhone(String phoneNumber, ResponseGetUsers response) {
+    public ResponseGetUsers.Data.Content getUserByPhone(String phoneNumber, ResponseGetUsers response) {
         List<ResponseGetUsers.Data.Content> users = response.getData().getContent();
         return users.stream().filter(u -> u.getPhoneNumber().equals(phoneNumber)).findFirst().orElse(null);
     }

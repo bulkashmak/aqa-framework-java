@@ -1,8 +1,11 @@
 package uz.gateway.services.auth;
 
 import io.qameta.allure.Step;
-import io.restassured.response.Response;
+import io.restassured.http.ContentType;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import uz.gateway.GatewayContainer;
 import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
 import uz.gateway.dto.auth.signIn.response.ResponseSignIn;
 import uz.gateway.dto.auth.signIn.response.ResponseSignInVerify;
@@ -15,220 +18,247 @@ import uz.gateway.dto.auth.signUp.response.ResponseSignUpVerify;
 import uz.gateway.services.auth.enums.ErrorMessage;
 import uz.gateway.testdata.pojo.User;
 
+import static org.apache.hc.core5.http.HttpStatus.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
-public class AuthServiceStep extends AuthService {
+@Service
+public class AuthServiceStep {
+
+    @Autowired
+    GatewayContainer gatewayContainer;
+
+    @Autowired
+    AuthService authService;
 
     //Срок действия OTP в миллисекундах
     public final int otpTimer = 60000;
 
-    @Step("[ШАГ] Авторизация зарегистрированного пользователя")
-    public ResponseSignIn signInStep(User user) {
-        log.info("[ШАГ] Авторизация зарегистрированного пользователя");
-        Response response = postSignIn(
-                        user.getPhoneNumber(), user.getPassword(), user.getDeviceId());
+    @Step("Step | Полная авторизация зарегистрированного пользователя")
+    public ResponseSignInVerify signInE2eStep(User user) {
+        log.info("Step | Полная авторизация зарегистрированного пользователя");
+        return signInVerifyStep(new RequestSignInVerify(
+                user.getDeviceId(),
+                signInStep(user).getData().getConfirmationKey(),
+                user.getOtp()));
+    }
 
-        assertEquals(200, response.getStatusCode(),
-                "При авторизации вернулся неверный статус код");
-        ResponseSignIn responseSignIn = response.getBody().as(ResponseSignIn.class);
-        assertNull(responseSignIn.getErrorMessage(),
+    @Step("Step | Авторизация зарегистрированного пользователя")
+    public ResponseSignIn signInStep(User user) {
+        log.info("Step | Авторизация зарегистрированного пользователя");
+        ResponseSignIn response = authService.postSignIn(
+                        user.getPhoneNumber(), user.getPassword(), user.getDeviceId())
+                .statusCode(SC_OK)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseSignIn.class);
+
+        assertNull(response.getErrorMessage(),
                 "В поле errorMessage вернулась ошибка");
-        assertTrue(responseSignIn.getData().getTtl() > 0,
+        assertTrue(response.getData().getTtl() > 0,
                 "В поле ttl срок действия otp <= 0");
-        assertNotNull(responseSignIn.getData().getConfirmationKey(),
+        assertNotNull(response.getData().getConfirmationKey(),
                 "В поле confirmationKey null");
 
-        return responseSignIn;
+        return response;
     }
 
-    @Step("[ШАГ] Авторизация НЕ зарегистрированного пользователя")
+    @Step("Step | Авторизация НЕ зарегистрированного пользователя")
     public void signInInvalidPhoneStep(User user) {
-        log.info("[ШАГ] Авторизация НЕ зарегистрированного пользователя");
-        Response response = postSignIn(
-                user.getPhoneNumber(), user.getPassword(), user.getDeviceId());
+        log.info("Step | Авторизация НЕ зарегистрированного пользователя");
+        ResponseSignIn response = authService.postSignIn(
+                        user.getPhoneNumber(), user.getPassword(), user.getDeviceId())
+                .statusCode(SC_FORBIDDEN)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseSignIn.class);
 
-        assertEquals(403, response.getStatusCode(),
-                "При авторизации с неверным телефоном вернулся неверный статус код");
-        ResponseSignIn responseSignIn = response.getBody().as(ResponseSignIn.class);
-        assertNull(responseSignIn.getData(),
+        assertNull(response.getData(),
                 "В поле data НЕ null при ошибке в ответе");
-        assertNotNull(responseSignIn.getErrorMessage(),
+        assertNotNull(response.getErrorMessage(),
                 "В ответе пустой errorMessage при ошибке");
     }
 
-    @Step("[ШАГ] Авторизация с НЕверным паролем")
+    @Step("Step | Авторизация с НЕверным паролем")
     public void signInInvalidPasswordStep(User user, String password) {
-        log.info("[ШАГ] Авторизация зарегистрированного пользователя с НЕверным паролем");
-        Response response = postSignIn(
-                user.getPhoneNumber(), password, user.getDeviceId());
+        log.info("Step | Авторизация зарегистрированного пользователя с НЕверным паролем");
+        ResponseSignIn response = authService.postSignIn(
+                        user.getPhoneNumber(), password, user.getDeviceId())
+                .statusCode(SC_FORBIDDEN)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseSignIn.class);
 
-        assertEquals(403, response.getStatusCode(),
-                "При авторизации с НЕверным паролем вернулся неверный статус код");
-        ResponseSignIn responseSignIn = response.getBody().as(ResponseSignIn.class);
-        assertNull(responseSignIn.getData(),
+        assertNull(response.getData(),
                 "В поле data НЕ null при ошибке в ответе");
-        assertNotNull(responseSignIn.getErrorMessage(),
+        assertNotNull(response.getErrorMessage(),
                 "В ответе пустой errorMessage при ошибке");
     }
 
-    @Step("[ШАГ] Верификация с верным СМС кодом")
+    @Step("Step | Верификация с верным СМС кодом")
     public ResponseSignInVerify signInVerifyStep(RequestSignInVerify requestSignInVerify) {
-        log.info("[ШАГ] Верификация с верным СМС кодом");
-        Response response = postSignInVerify(requestSignInVerify);
+        log.info("Step | Верификация с верным СМС кодом");
+        ResponseSignInVerify response = authService.postSignInVerify(requestSignInVerify)
+                .statusCode(SC_OK)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseSignInVerify.class);
 
-        assertEquals(200, response.getStatusCode(),
-                String.format("При верификации СМС кода вернулся %s статус код", response.getStatusCode()));
-        ResponseSignInVerify responseSignInVerify = response.getBody().as(ResponseSignInVerify.class);
-        assertNull(responseSignInVerify.getErrorMessage(),
+        switch (gatewayContainer.getUser().getRole()) {
+            case "admin": gatewayContainer.setAdminAccessToken(response.getData().getAccessToken());
+            case "user": gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
+        }
+
+        assertNull(response.getErrorMessage(),
                 "В поле errorMessage вернулась ошибка");
-        assertNotNull(responseSignInVerify.getData().getAccessToken(),
+        assertNotNull(response.getData().getAccessToken(),
                 "В поле accessToken null");
-        assertNotNull(responseSignInVerify.getData().getRefreshToken(),
+        assertNotNull(response.getData().getRefreshToken(),
                 "В поле refreshToken null");
-        assertNotNull(responseSignInVerify.getData().getAccessTokenType(),
+        assertNotNull(response.getData().getAccessTokenType(),
                 "В поле accessTokenType null");
 
-        return response.getBody().as(ResponseSignInVerify.class);
+        return response;
     }
 
-    @Step("[ШАГ] Верификация с неверным СМС кодом")
+    @Step("Step | Верификация с неверным СМС кодом")
     public void signInVerifyInvalidOtpStep(RequestSignInVerify requestSignInVerify) {
-        log.info("[ШАГ] Верификация с неверным СМС кодом");
-        Response response = postSignInVerify(requestSignInVerify);
+        log.info("Step | Верификация с неверным СМС кодом");
+        ResponseSignInVerify response = authService.postSignInVerify(requestSignInVerify)
+                .statusCode(SC_BAD_REQUEST)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseSignInVerify.class);
 
-        assertEquals(400, response.getStatusCode(),
-                String.format("При верификации НЕверного СМС кода вернулся %s статус код", response.getStatusCode()));
-        ResponseSignInVerify responseSignInVerify = response.getBody().as(ResponseSignInVerify.class);
-        assertNull(responseSignInVerify.getData(),
+        assertNull(response.getData(),
                 "В поле data НЕ null при ошибке");
-        assertNotNull(responseSignInVerify.getErrorMessage(),
+        assertNotNull(response.getErrorMessage(),
                 "В ответе нет errorMessage");
     }
 
-    @Step("[ШАГ] Верификация с просроченным СМС кодом")
+    @Step("Step | Верификация с просроченным СМС кодом")
     public void signInVerifyOtpExpiredStep(RequestSignInVerify requestSignInVerify) {
-        log.info("[ШАГ] Верификация с просроченным СМС кодом");
+        log.info("Step | Верификация с просроченным СМС кодом");
         //todo избавиться от tread.sleep
         try {
             Thread.sleep(otpTimer);
         } catch (InterruptedException e) {
             throw new RuntimeException("Ошибка при ожидании истечения срока действия СМС кода", e);
         }
-        Response response = postSignInVerify(requestSignInVerify);
+        ResponseSignInVerify response = authService.postSignInVerify(requestSignInVerify)
+                .statusCode(SC_BAD_REQUEST)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseSignInVerify.class);
 
-        assertEquals(400, response.getStatusCode());
-        ResponseSignInVerify responseSignInVerify = response.getBody().as(ResponseSignInVerify.class);
-        assertNull(responseSignInVerify.getData(),
+        assertNull(response.getData(),
                 "В поле data НЕ null при ошибке");
-        assertEquals(responseSignInVerify.getErrorMessage(), ErrorMessage.EXPIRED_OTP.getMessage(),
+        assertEquals(response.getErrorMessage(), ErrorMessage.EXPIRED_OTP.getMessage(),
                 "В ответе неверный errorMessage");
     }
 
-    @Step("[ШАГ] Регистрация нового пользователя")
+    @Step("Step | Регистрация нового пользователя")
     public ResponseSignUp signUpStep(RequestSignUp requestSignUp) {
-        log.info("[ШАГ] Регистрация нового пользователя");
-        Response response = postSignUp(requestSignUp);
+        log.info("Step | Регистрация нового пользователя");
+        ResponseSignUp response = authService.postSignUp(requestSignUp)
+                .statusCode(SC_OK)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseSignUp.class);
 
-        assertEquals(200, response.getStatusCode());
-        ResponseSignUp responseSignUp = response.getBody().as(ResponseSignUp.class);
-        assertNull(responseSignUp.getErrorMessage(),
+        assertNull(response.getErrorMessage(),
                 "В поле errorMessage вернулась ошибка");
-        assertTrue(responseSignUp.getData().getTtl() > 0,
+        assertTrue(response.getData().getTtl() > 0,
                 "В поле ttl срок действия otp <= 0");
-        assertNotNull(responseSignUp.getData().getConfirmationKey(),
+        assertNotNull(response.getData().getConfirmationKey(),
                 "В поле confirmationKey null");
 
-        return response.getBody().as(ResponseSignUp.class);
+        return response;
     }
 
-    @Step("[ШАГ] Регистрация с зарегистрированным номером телефона")
+    @Step("Step | Регистрация с зарегистрированным номером телефона")
     public void signUpRegisteredPhoneStep(RequestSignUp requestSignUp) {
-        log.info("[ШАГ] Регистрация с зарегистрированным номером телефона");
-        Response response = postSignUp(requestSignUp);
+        log.info("Step | Регистрация с зарегистрированным номером телефона");
+        ResponseSignUp response = authService.postSignUp(requestSignUp)
+                .statusCode(SC_CONFLICT)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseSignUp.class);
 
-        assertEquals(409, response.getStatusCode(),
-                "При регистрации с зарегистрированным телефоном пришел неверный статус код");
-        ResponseSignUp responseSignUp = response.getBody().as(ResponseSignUp.class);
-        assertNull(responseSignUp.getData(),
+        assertNull(response.getData(),
                 "При ответе с ошибкой - поле data не пустое");
-        assertEquals(ErrorMessage.NUMBER_EXISTS.getMessage(), responseSignUp.getErrorMessage(),
+        assertEquals(ErrorMessage.NUMBER_EXISTS.getMessage(), response.getErrorMessage(),
                 "При ответе с ошибкой вернулось неверное сообщение в поле errorMessage");
     }
 
-    @Step("[ШАГ] Регистрация. Верификация СМС кода")
+    @Step("Step | Регистрация. Верификация СМС кода")
     public void signUpVerifyStep(RequestSignUpVerify requestSignUpVerify) {
-        log.info("[ШАГ] Регистрация. Верификация СМС кода");
-        Response response = postSignUpVerify(requestSignUpVerify);
-
-        assertEquals(200, response.getStatusCode());
+        log.info("Step | Регистрация. Верификация СМС кода");
+        authService.postSignUpVerify(requestSignUpVerify)
+                .statusCode(SC_OK);
     }
 
-    @Step("[ШАГ] Регистрация с НЕверным СМС кодом")
+    @Step("Step | Регистрация с НЕверным СМС кодом")
     public void signUpVerifyInvalidOtpStep(RequestSignUpVerify requestSignUpVerify) {
-        log.info("[ШАГ] Регистрация с НЕверным СМС кодом");
-        Response response = postSignUpVerify(requestSignUpVerify);
+        log.info("Step | Регистрация с НЕверным СМС кодом");
+        ResponseSignUpVerify response = authService.postSignUpVerify(requestSignUpVerify)
+                .statusCode(SC_BAD_REQUEST)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseSignUpVerify.class);
 
-        assertEquals(400, response.getStatusCode(),
-                "Верификация НЕверного СМС кода вернуло неверный статус код");
-        ResponseSignUpVerify responseSignUpVerify = response.getBody().as(ResponseSignUpVerify.class);
-        assertNull(responseSignUpVerify.getData(),
+        assertNull(response.getData(),
                 "Верификация СМС с ошибкой вернуло НЕ пустое поле data");
-        assertEquals(ErrorMessage.INVALID_OTP.getMessage(), responseSignUpVerify.getErrorMessage(),
+        assertEquals(ErrorMessage.INVALID_OTP.getMessage(), response.getErrorMessage(),
                 "Верификация СМС с ошибкой вернуло НЕверное errorMessage");
     }
 
-    @Step("[ШАГ] Верификация с просроченным СМС кодом")
+    @Step("Step | Верификация с просроченным СМС кодом")
     public void signUpVerifyExpiredOtpStep(RequestSignUpVerify requestSignUpVerify) {
-        log.info("[ШАГ] Верификация с просроченным СМС кодом");
+        log.info("Step | Верификация с просроченным СМС кодом");
         //todo избавиться от tread.sleep
         try {
             Thread.sleep(otpTimer);
         } catch (InterruptedException e) {
             throw new RuntimeException("Ошибка при ожидании истечения срока действия СМС кода", e);
         }
-        Response response = postSignUpVerify(requestSignUpVerify);
+        ResponseSignUpVerify response = authService.postSignUpVerify(requestSignUpVerify)
+                .statusCode(SC_BAD_REQUEST)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseSignUpVerify.class);
 
-        assertEquals(400, response.getStatusCode(),
-                "Запрос Верификация OTP с протухшим СМС кодом вернула неверный статус код");
-        ResponseSignUpVerify responseSignUpVerify = response.getBody().as(ResponseSignUpVerify.class);
-        assertNull(responseSignUpVerify.getData(),
+        assertNull(response.getData(),
                 "Запрос Верификация OTP с протухшим СМС кодом вернула не пустое поле data");
-        assertEquals(ErrorMessage.EXPIRED_OTP.getMessage(), responseSignUpVerify.getErrorMessage(),
+        assertEquals(ErrorMessage.EXPIRED_OTP.getMessage(), response.getErrorMessage(),
                 "Запрос Верификация OTP с протухшим СМС кодом вернула неверное errorMessage");
     }
 
-    @Step("[ШАГ] Регистрация. Установка пароля")
-    public ResponseSignUpSetPassword signUpSetPasswordStep(
-            int expectedStatusCode, RequestSignUpSetPassoword requestSignUpSetPassoword) {
-        log.info("[ШАГ] Регистрация. Установка пароля");
-        Response response = postSignUpSetPassword(requestSignUpSetPassoword);
+    @Step("Step | Регистрация. Установка пароля")
+    public ResponseSignUpSetPassword signUpSetPasswordStep(RequestSignUpSetPassoword requestSignUpSetPassoword) {
+        log.info("Step | Регистрация. Установка пароля");
+        ResponseSignUpSetPassword response = authService.postSignUpSetPassword(requestSignUpSetPassoword)
+                .statusCode(SC_OK)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseSignUpSetPassword.class);
 
-        assertEquals(expectedStatusCode, response.getStatusCode());
-        ResponseSignUpSetPassword responseSignUpSetPassword = response.getBody().as(ResponseSignUpSetPassword.class);
-        assertNull(responseSignUpSetPassword.getErrorMessage(),
+        switch (gatewayContainer.getUser().getRole()) {
+            case "admin": gatewayContainer.setAdminAccessToken(response.getData().getAccessToken());
+            case "user": gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
+        }
+        assertNull(response.getErrorMessage(),
                 "В поле errorMessage вернулась ошибка");
-        assertNotNull(responseSignUpSetPassword.getData().getAccessToken(),
+        assertNotNull(response.getData().getAccessToken(),
                 "В поле accessToken null");
-        assertNotNull(responseSignUpSetPassword.getData().getRefreshToken(),
+        assertNotNull(response.getData().getRefreshToken(),
                 "В поле refreshToken null");
-        assertNotNull(responseSignUpSetPassword.getData().getAccessTokenType(),
+        assertNotNull(response.getData().getAccessTokenType(),
                 "В поле accessTokenType null");
-        return response.getBody().as(ResponseSignUpSetPassword.class);
+        return response;
     }
 
-    @Step("[ШАГ] Регистрация с неверным паролем")
+    @Step("Step | Регистрация с неверным паролем")
     public void signUpInvalidPasswordStep(
             RequestSignUpSetPassoword requestSignUpSetPassoword, String error) {
-        log.info("[ШАГ] Регистрация с неверным паролем");
-        Response response = postSignUpSetPassword(requestSignUpSetPassoword);
+        log.info("Step | Регистрация с неверным паролем");
+        ResponseSignUpSetPassword response = authService.postSignUpSetPassword(requestSignUpSetPassoword)
+                .statusCode(SC_BAD_REQUEST)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseSignUpSetPassword.class);
 
-        assertEquals(400, response.getStatusCode(),
-                "При ошибке в ответе вернулся неверный статус код");
-        ResponseSignUpSetPassword responseSignUpSetPassword = response.getBody().as(ResponseSignUpSetPassword.class);
-        assertNull(responseSignUpSetPassword.getData(),
+        assertNull(response.getData(),
                 "При ошибке в ответе поле data не пустое");
-        assertEquals(error, responseSignUpSetPassword.getErrorMessage(),
+        assertEquals(error, response.getErrorMessage(),
                 "При неверном пароле в ответе вернулся неверный errorMessage");
     }
 }

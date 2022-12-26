@@ -32,4 +32,6 @@ public class User {
     private String deviceId;
     @JsonProperty("otp")
     private String otp;
+    @JsonProperty("role")
+    private String role;
 }
