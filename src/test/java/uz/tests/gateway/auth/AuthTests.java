@@ -13,8 +13,10 @@ import uz.gateway.dto.auth.signUp.request.RequestSignUp;
 import uz.gateway.dto.auth.signUp.request.RequestSignUpSetPassoword;
 import uz.gateway.dto.auth.signUp.request.RequestSignUpVerify;
 import uz.gateway.dto.auth.signUp.response.ResponseSignUp;
+import uz.gateway.services.auth.AuthServiceCheck;
 import uz.gateway.services.auth.AuthServiceStep;
 import uz.gateway.services.auth.enums.SignUpPasswordError;
+import uz.gateway.services.users.UsersServiceStep;
 import uz.gateway.testdata.pojo.User;
 import uz.tests.gateway.GatewayTest;
 
@@ -26,6 +28,11 @@ public class AuthTests extends GatewayTest {
 
     @Autowired
     AuthServiceStep authServiceStep;
+    @Autowired
+    AuthServiceCheck authServiceCheck;
+
+    @Autowired
+    UsersServiceStep usersServiceStep;
 
     @Nested
     @Owner("Bulat Maskurov")
@@ -43,7 +50,6 @@ public class AuthTests extends GatewayTest {
             User user = testDataProvider.getUserByAlias("default");
 
             ResponseSignIn responseSignIn = authServiceStep.signInStep(user);
-
             authServiceStep.signInVerifyStep(new RequestSignInVerify(
                     user.getDeviceId(),
                     responseSignIn.getData().getConfirmationKey(),
@@ -57,7 +63,8 @@ public class AuthTests extends GatewayTest {
         public void signInInvalidPhoneTest() {
 
             User user = testDataProvider.getUserByAlias("delete");
-            testDataProvider.deleteUserByPhone(user.getPhoneNumber());
+            User admin = testDataProvider.getUserByAlias("admin");
+            usersServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
 
             authServiceStep.signInInvalidPhoneStep(user);
         }
@@ -118,18 +125,19 @@ public class AuthTests extends GatewayTest {
         public void signUpTest() {
 
             User user = testDataProvider.getUserByAlias("user");
-            testDataProvider.deleteUserByPhone(user.getPhoneNumber());
+            User admin = testDataProvider.getUserByAlias("admin");
+            usersServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
 
             ResponseSignUp responseSignUp = authServiceStep.signUpStep(new RequestSignUp(
                     user.getPhoneNumber(), "captcha"));
-
             authServiceStep.signUpVerifyStep(new RequestSignUpVerify(
                     responseSignUp.getData().getConfirmationKey(), user.getOtp()));
-
             authServiceStep.signUpSetPasswordStep(
                     new RequestSignUpSetPassoword(
                             responseSignUp.getData().getConfirmationKey(),
                             user.getPassword()));
+
+            authServiceCheck.userCreatedCheck(user, admin);
         }
 
         @Test
@@ -151,7 +159,8 @@ public class AuthTests extends GatewayTest {
         public void signUpInvalidOtpTest() {
 
             User user = testDataProvider.getUserByAlias("delete");
-            testDataProvider.deleteUserByPhone(user.getPhoneNumber());
+            User admin = testDataProvider.getUserByAlias("admin");
+            usersServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
 
             ResponseSignUp responseSignUp = authServiceStep.signUpStep(new RequestSignUp(
                     user.getPhoneNumber(), "captcha"));
@@ -166,7 +175,8 @@ public class AuthTests extends GatewayTest {
         public void signUpExpiredOtpTest() {
 
             User user = testDataProvider.getUserByAlias("delete");
-            testDataProvider.deleteUserByPhone(user.getPhoneNumber());
+            User admin = testDataProvider.getUserByAlias("admin");
+            usersServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
 
             ResponseSignUp responseSignUp = authServiceStep.signUpStep(new RequestSignUp(
                     user.getPhoneNumber(), "captcha"));
@@ -181,7 +191,8 @@ public class AuthTests extends GatewayTest {
         public void signUpInvalidPasswordTest() {
 
             User user = testDataProvider.getUserByAlias("delete");
-            testDataProvider.deleteUserByPhone(user.getPhoneNumber());
+            User admin = testDataProvider.getUserByAlias("admin");
+            usersServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
 
             Map<String, String> invalidPasswords = Map.of(
                     SignUpPasswordError.TOO_SHORT.getError(), "asdf123",
@@ -193,10 +204,8 @@ public class AuthTests extends GatewayTest {
 
             ResponseSignUp responseSignUp = authServiceStep.signUpStep(new RequestSignUp(
                     user.getPhoneNumber(), "captcha"));
-
             authServiceStep.signUpVerifyStep(new RequestSignUpVerify(
                     responseSignUp.getData().getConfirmationKey(), user.getOtp()));
-
             for (var entry : invalidPasswords.entrySet()) {
                 authServiceStep.signUpInvalidPasswordStep(new RequestSignUpSetPassoword(
                                 responseSignUp.getData().getConfirmationKey(),
