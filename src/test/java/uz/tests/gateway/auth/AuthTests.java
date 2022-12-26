@@ -243,5 +243,19 @@ public class AuthTests extends GatewayTest {
 
             authServiceStep.signInE2eStep(user);
         }
+
+        @Test
+        @AllureId("2724")
+        @Tag("negative")
+        @DisplayName("Reset password | Незарегистрированный номер телефона")
+        public void resetPasswordInvalidPhoneTest() {
+
+            User user = testDataProvider.getUserByAlias("delete");
+            User admin = testDataProvider.getUserByAlias("admin");
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+
+            authServiceStep.resetPasswordInvalidPhoneStep(new RequestResetPassword(
+                    user.getPhoneNumber(), "captcha"));
+        }
     }
 }

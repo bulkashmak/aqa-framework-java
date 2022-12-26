@@ -312,6 +312,22 @@ public class AuthServiceStep {
         return response;
     }
 
+    @Step("Step | Сброс пароля НЕзарегистрированного пользователя")
+    public ResponseResetPassword resetPasswordInvalidPhoneStep(RequestResetPassword requestBody) {
+        log.info("Step | Сброс пароля НЕзарегистрированного пользователя");
+        ResponseResetPassword response = authService.postResetPassword(requestBody)
+                .statusCode(SC_NOT_FOUND)
+                .contentType(ContentType.JSON)
+                .extract().as(ResponseResetPassword.class);
+
+        assertNull(response.getData(),
+                "Сброс пароля. Незарегистрированный номер телефона, data не null");
+        assertEquals(ErrorMessage.USER_NOT_FOUND_BY_PHONE.getMessage(), response.getErrorMessage(),
+                "Сброс пароля. Незарегистрированный номер телефона. Неверный errorMessage");
+
+        return response;
+    }
+
     @Step("Step | Сброс пароля. Верификация СМС кода")
     public void resetPasswordVerifyStep(RequestResetPasswordVerify requestBody) {
         log.info("Step | Сброс пароля. Верификация СМС кода");
@@ -330,10 +346,6 @@ public class AuthServiceStep {
     public void deleteUserByPhonePrecondition(String phoneNumber, User admin) {
         log.info("Precondition | Удаление пользователя по номеру телефона");
         signInE2eStep(admin);
-//        ResponseGetUsers responseGetUsers = adminController.getUsers()
-//                .statusCode(SC_OK)
-//                .contentType(ContentType.JSON)
-//                .extract().as(ResponseGetUsers.class);
         ResponseGetUsers responseGetUsers = usersServiceStep.getUsersStep();
         usersServiceStep.deleteUserByPhone(phoneNumber, responseGetUsers);
     }
