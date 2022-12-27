@@ -65,9 +65,13 @@ public class TestDataProvider {
         User user = getUsers().stream()
                 .filter(u -> u.getAlias().equals(alias)).findFirst().orElse(null);
         if (user == null) {
-            throw new RuntimeException("Ошибка при чтении user из testdata");
+            throw new RuntimeException("Пользователь не найден в testdata");
         } else {
-            gatewayContainer.setUser(user);
+            if (user.getRole().equals("admin")) {
+                gatewayContainer.setAdmin(user);
+            } else {
+                gatewayContainer.setUser(user);
+            }
             return user;
         }
     }
