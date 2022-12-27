@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uz.annotations.allure.Epic;
 import uz.annotations.allure.Feature;
 import uz.annotations.allure.Story;
+import uz.annotations.allure.Substory;
 import uz.gateway.services.auth.AuthServiceCheck;
 import uz.gateway.services.auth.AuthServiceStep;
 import uz.gateway.services.auth.enums.SignUpPasswordError;
@@ -261,6 +262,49 @@ public class AuthTests extends GatewayTest {
             authServiceStep.resetPasswordStep();
             authServiceStep.resetPasswordVerifyStep(user.getOtp());
             authServiceStep.resetPasswordInvalidPasswordStep(invalidPasswords);
+        }
+    }
+
+    @Nested
+    @Owner("Bulat Maskurov")
+    @DisplayName("Sign-out tests")
+    @Epic("Gateway API")
+    @Feature("Auth service")
+    @Story("Sign-out")
+    public class SignOutTests {
+
+        @Test
+        @AllureId("5072")
+        @Tag("positive")
+        @DisplayName("Sign-out | Валидные данные")
+        public void signOutTest() {
+
+            testDataProvider.getUserByAlias("default");
+
+            authServiceStep.signInE2eStep();
+            authServiceStep.signOutStep();
+        }
+    }
+
+    @Nested
+    @Owner("Bulat Maskurov")
+    @DisplayName("Refresh token tests")
+    @Epic("Gateway API")
+    @Feature("Auth service")
+    @Story("Token")
+    @Substory("Refresh token")
+    public class RefreshTokenTests {
+
+        @Test
+        @AllureId("5074")
+        @Tag("positive")
+        @DisplayName("Refresh token | Валидные данные")
+        public void refreshTokenTest() {
+
+            testDataProvider.getUserByAlias("default");
+
+            authServiceStep.signInE2eStep();
+            authServiceStep.refreshTokenStep();
         }
     }
 }

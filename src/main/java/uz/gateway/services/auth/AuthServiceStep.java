@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import uz.gateway.GatewayContainer;
 import uz.gateway.dto.GatewayResponse;
+import uz.gateway.dto.auth.refreshToken.RefreshTokenRequest;
+import uz.gateway.dto.auth.refreshToken.RefreshTokenResponse;
 import uz.gateway.dto.auth.resetPassword.request.ResetPasswordRequest;
 import uz.gateway.dto.auth.resetPassword.request.ResetPasswordSetPasswordRequest;
 import uz.gateway.dto.auth.resetPassword.request.ResetPasswordVerifyRequest;
@@ -14,6 +16,7 @@ import uz.gateway.dto.auth.resetPassword.response.ResetPasswordResponse;
 import uz.gateway.dto.auth.signIn.request.SignInVerifyRequest;
 import uz.gateway.dto.auth.signIn.response.SignInResponse;
 import uz.gateway.dto.auth.signIn.response.SignInVerifyResponse;
+import uz.gateway.dto.auth.signOut.SignOutRequest;
 import uz.gateway.dto.auth.signUp.request.SignUpRequest;
 import uz.gateway.dto.auth.signUp.request.SignUpSetPasswordRequest;
 import uz.gateway.dto.auth.signUp.request.SignUpVerifyRequest;
@@ -130,6 +133,7 @@ public class AuthServiceStep {
                 .extract().as(SignInVerifyResponse.class);
 
         gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
+        gatewayContainer.setUserRefreshToken(response.getData().getRefreshToken());
 
         assertNull(response.getErrorMessage(),
                 "В поле errorMessage вернулась ошибка");
@@ -280,6 +284,7 @@ public class AuthServiceStep {
                 .extract().as(SignUpSetPasswordResponse.class);
 
         gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
+        gatewayContainer.setUserRefreshToken(response.getData().getRefreshToken());
 
         assertNull(response.getErrorMessage(),
                 "В поле errorMessage вернулась ошибка");
@@ -433,6 +438,42 @@ public class AuthServiceStep {
         if (response == null) {
             throw new RuntimeException("Сброс пароля. Неверный пароль. Пустой response");
         }
+        return response;
+    }
+
+    @Step("Step | Sign out авторизованного пользователя")
+    public void signOutStep() {
+        log.info("Step | Sign out авторизованного пользователя");
+        authService.postSignOut(new SignOutRequest(
+                        gatewayContainer.getUser().getDeviceId()))
+                .statusCode(SC_OK);
+    }
+
+    @Step("Step | Обновление access и refresh токена")
+    public RefreshTokenResponse refreshTokenStep() {
+        log.info("Step | Обновление access и refresh токена");
+        RefreshTokenResponse response = authService.postRefreshToken(new RefreshTokenRequest(
+                        gatewayContainer.getUserAccessToken(),
+                        gatewayContainer.getUserRefreshToken(),
+                        gatewayContainer.getUser().getDeviceId()))
+                .statusCode(SC_OK)
+                .contentType(ContentType.JSON)
+                .extract().as(RefreshTokenResponse.class);
+
+        gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
+        gatewayContainer.setUserRefreshToken(response.getData().getRefreshToken());
+
+        assertNotNull(response.getData(),
+                "Обновление токена. При положительном сценарии не вернулась data");
+        assertNull(response.getErrorMessage(),
+                "Обновление токена. При положительном сценарии вернулась ошибка");
+        assertNotNull(response.getData().getAccessToken(),
+                "Обновление токена. При положительном сценарии не вернулся access token");
+        assertNotNull(response.getData().getRefreshToken(),
+                "Обновление токена. При положительном сценарии не вернулся refresh token");
+        assertNotNull(response.getData().getAccessTokenType(),
+                "Обновление токена. При положительном сценарии не вернулся тип токена");
+
         return response;
     }
 
