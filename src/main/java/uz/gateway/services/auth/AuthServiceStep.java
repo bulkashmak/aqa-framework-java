@@ -25,6 +25,8 @@ import uz.gateway.services.auth.enums.ErrorMessage;
 import uz.gateway.services.users.UsersServiceStep;
 import uz.gateway.testdata.pojo.User;
 
+import java.util.Map;
+
 import static org.apache.hc.core5.http.HttpStatus.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -51,22 +53,24 @@ public class AuthServiceStep {
     public final int otpTimer = 60000;
 
     @Step("Step | Полная авторизация зарегистрированного пользователя")
-    public SignInVerifyResponse signInE2eStep(User user) {
+    public SignInVerifyResponse signInE2eStep() {
         log.info("Step | Полная авторизация зарегистрированного пользователя");
-        return signInVerifyStep(new SignInVerifyRequest(
-                user.getDeviceId(),
-                signInStep(user).getData().getConfirmationKey(),
-                user.getOtp()));
+        signInStep();
+        return signInVerifyStep(gatewayContainer.getUser().getOtp());
     }
 
     @Step("Step | Авторизация зарегистрированного пользователя")
-    public SignInResponse signInStep(User user) {
+    public SignInResponse signInStep() {
         log.info("Step | Авторизация зарегистрированного пользователя");
         SignInResponse response = authService.postSignIn(
-                        user.getPhoneNumber(), user.getPassword(), user.getDeviceId())
+                        gatewayContainer.getUser().getPhoneNumber(),
+                        gatewayContainer.getUser().getPassword(),
+                        gatewayContainer.getUser().getDeviceId())
                 .statusCode(SC_OK)
                 .contentType(ContentType.JSON)
                 .extract().as(SignInResponse.class);
+
+        gatewayContainer.setConfirmationKey(response.getData().getConfirmationKey());
 
         assertNull(response.getErrorMessage(),
                 "В поле errorMessage вернулась ошибка");
@@ -79,11 +83,13 @@ public class AuthServiceStep {
     }
 
     @Step("Step | Авторизация НЕ зарегистрированного пользователя")
-    public void signInInvalidPhoneStep(User user) {
+    public void signInInvalidPhoneStep(String invalidPhone) {
         log.info("Step | Авторизация НЕ зарегистрированного пользователя");
 //        ResponseSignIn response =
         authService.postSignIn(
-                        user.getPhoneNumber(), user.getPassword(), user.getDeviceId())
+                        invalidPhone,
+                        gatewayContainer.getUser().getPassword(),
+                        gatewayContainer.getUser().getDeviceId())
                 .statusCode(SC_FORBIDDEN);
 //                .contentType(ContentType.JSON)
 //                .extract().as(ResponseSignIn.class);
@@ -95,11 +101,13 @@ public class AuthServiceStep {
     }
 
     @Step("Step | Авторизация с НЕверным паролем")
-    public void signInInvalidPasswordStep(User user, String password) {
+    public void signInInvalidPasswordStep(String invalidPassword) {
         log.info("Step | Авторизация зарегистрированного пользователя с НЕверным паролем");
 //        ResponseSignIn response =
         authService.postSignIn(
-                        user.getPhoneNumber(), password, user.getDeviceId())
+                        gatewayContainer.getUser().getPhoneNumber(),
+                        invalidPassword,
+                        gatewayContainer.getUser().getDeviceId())
                 .statusCode(SC_FORBIDDEN);
 //                .contentType(ContentType.JSON)
 //                .extract().as(ResponseSignIn.class);
@@ -111,19 +119,17 @@ public class AuthServiceStep {
     }
 
     @Step("Step | Верификация с верным СМС кодом")
-    public SignInVerifyResponse signInVerifyStep(SignInVerifyRequest signInVerifyRequest) {
+    public SignInVerifyResponse signInVerifyStep(String otp) {
         log.info("Step | Верификация с верным СМС кодом");
-        SignInVerifyResponse response = authService.postSignInVerify(signInVerifyRequest)
+        SignInVerifyResponse response = authService.postSignInVerify(new SignInVerifyRequest(
+                        gatewayContainer.getUser().getDeviceId(),
+                        gatewayContainer.getConfirmationKey(),
+                        otp))
                 .statusCode(SC_OK)
                 .contentType(ContentType.JSON)
                 .extract().as(SignInVerifyResponse.class);
 
-        switch (gatewayContainer.getUser().getRole()) {
-            case "admin":
-                gatewayContainer.setAdminAccessToken(response.getData().getAccessToken());
-            case "user":
-                gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
-        }
+        gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
 
         assertNull(response.getErrorMessage(),
                 "В поле errorMessage вернулась ошибка");
@@ -138,9 +144,12 @@ public class AuthServiceStep {
     }
 
     @Step("Step | Верификация с неверным СМС кодом")
-    public void signInVerifyInvalidOtpStep(SignInVerifyRequest signInVerifyRequest) {
+    public void signInVerifyInvalidOtpStep(String invalidOtp) {
         log.info("Step | Верификация с неверным СМС кодом");
-        SignInVerifyResponse response = authService.postSignInVerify(signInVerifyRequest)
+        SignInVerifyResponse response = authService.postSignInVerify(new SignInVerifyRequest(
+                        gatewayContainer.getUser().getDeviceId(),
+                        gatewayContainer.getConfirmationKey(),
+                        invalidOtp))
                 .statusCode(SC_BAD_REQUEST)
                 .contentType(ContentType.JSON)
                 .extract().as(SignInVerifyResponse.class);
@@ -152,7 +161,7 @@ public class AuthServiceStep {
     }
 
     @Step("Step | Верификация с просроченным СМС кодом")
-    public void signInVerifyOtpExpiredStep(SignInVerifyRequest signInVerifyRequest) {
+    public void signInVerifyOtpExpiredStep() {
         log.info("Step | Верификация с просроченным СМС кодом");
         //todo избавиться от tread.sleep
         try {
@@ -160,7 +169,10 @@ public class AuthServiceStep {
         } catch (InterruptedException e) {
             throw new RuntimeException("Ошибка при ожидании истечения срока действия СМС кода", e);
         }
-        SignInVerifyResponse response = authService.postSignInVerify(signInVerifyRequest)
+        SignInVerifyResponse response = authService.postSignInVerify(new SignInVerifyRequest(
+                        gatewayContainer.getUser().getDeviceId(),
+                        gatewayContainer.getConfirmationKey(),
+                        gatewayContainer.getUser().getOtp()))
                 .statusCode(SC_BAD_REQUEST)
                 .contentType(ContentType.JSON)
                 .extract().as(SignInVerifyResponse.class);
@@ -172,12 +184,16 @@ public class AuthServiceStep {
     }
 
     @Step("Step | Регистрация нового пользователя")
-    public SignUpResponse signUpStep(SignUpRequest signUpRequest) {
+    public SignUpResponse signUpStep() {
         log.info("Step | Регистрация нового пользователя");
-        SignUpResponse response = authService.postSignUp(signUpRequest)
+        SignUpResponse response = authService.postSignUp(new SignUpRequest(
+                        gatewayContainer.getUser().getPhoneNumber(),
+                        "captcha"))
                 .statusCode(SC_OK)
                 .contentType(ContentType.JSON)
                 .extract().as(SignUpResponse.class);
+
+        gatewayContainer.setConfirmationKey(response.getData().getConfirmationKey());
 
         assertNull(response.getErrorMessage(),
                 "В поле errorMessage вернулась ошибка");
@@ -190,9 +206,11 @@ public class AuthServiceStep {
     }
 
     @Step("Step | Регистрация с зарегистрированным номером телефона")
-    public void signUpRegisteredPhoneStep(SignUpRequest signUpRequest) {
+    public void signUpRegisteredPhoneStep(String registeredPhone) {
         log.info("Step | Регистрация с зарегистрированным номером телефона");
-        SignUpResponse response = authService.postSignUp(signUpRequest)
+        SignUpResponse response = authService.postSignUp(new SignUpRequest(
+                        registeredPhone,
+                        "captcha"))
                 .statusCode(SC_CONFLICT)
                 .contentType(ContentType.JSON)
                 .extract().as(SignUpResponse.class);
@@ -204,16 +222,20 @@ public class AuthServiceStep {
     }
 
     @Step("Step | Регистрация. Верификация СМС кода")
-    public void signUpVerifyStep(SignUpVerifyRequest signUpVerifyRequest) {
+    public void signUpVerifyStep(String otp) {
         log.info("Step | Регистрация. Верификация СМС кода");
-        authService.postSignUpVerify(signUpVerifyRequest)
+        authService.postSignUpVerify(new SignUpVerifyRequest(
+                        gatewayContainer.getConfirmationKey(),
+                        otp))
                 .statusCode(SC_OK);
     }
 
     @Step("Step | Регистрация с НЕверным СМС кодом")
-    public void signUpVerifyInvalidOtpStep(SignUpVerifyRequest signUpVerifyRequest) {
+    public void signUpVerifyInvalidOtpStep(String invalidOtp) {
         log.info("Step | Регистрация с НЕверным СМС кодом");
-        SignUpVerifyResponse response = authService.postSignUpVerify(signUpVerifyRequest)
+        SignUpVerifyResponse response = authService.postSignUpVerify(new SignUpVerifyRequest(
+                        gatewayContainer.getConfirmationKey(),
+                        invalidOtp))
                 .statusCode(SC_BAD_REQUEST)
                 .contentType(ContentType.JSON)
                 .extract().as(SignUpVerifyResponse.class);
@@ -225,7 +247,7 @@ public class AuthServiceStep {
     }
 
     @Step("Step | Верификация с просроченным СМС кодом")
-    public void signUpVerifyExpiredOtpStep(SignUpVerifyRequest signUpVerifyRequest) {
+    public void signUpVerifyExpiredOtpStep() {
         log.info("Step | Верификация с просроченным СМС кодом");
         //todo избавиться от tread.sleep
         try {
@@ -233,7 +255,10 @@ public class AuthServiceStep {
         } catch (InterruptedException e) {
             throw new RuntimeException("Ошибка при ожидании истечения срока действия СМС кода", e);
         }
-        SignUpVerifyResponse response = authService.postSignUpVerify(signUpVerifyRequest)
+        SignUpVerifyResponse response = authService.postSignUpVerify(new SignUpVerifyRequest(
+                        gatewayContainer.getConfirmationKey(),
+                        gatewayContainer.getUser().getOtp()
+                ))
                 .statusCode(SC_BAD_REQUEST)
                 .contentType(ContentType.JSON)
                 .extract().as(SignUpVerifyResponse.class);
@@ -245,19 +270,17 @@ public class AuthServiceStep {
     }
 
     @Step("Step | Регистрация. Установка пароля")
-    public SignUpSetPasswordResponse signUpSetPasswordStep(SignUpSetPasswordRequest signUpSetPasswordRequest) {
+    public SignUpSetPasswordResponse signUpSetPasswordStep(String password) {
         log.info("Step | Регистрация. Установка пароля");
-        SignUpSetPasswordResponse response = authService.postSignUpSetPassword(signUpSetPasswordRequest)
+        SignUpSetPasswordResponse response = authService.postSignUpSetPassword(new SignUpSetPasswordRequest(
+                        gatewayContainer.getConfirmationKey(),
+                        gatewayContainer.getUser().getPassword()))
                 .statusCode(SC_OK)
                 .contentType(ContentType.JSON)
                 .extract().as(SignUpSetPasswordResponse.class);
 
-        switch (gatewayContainer.getUser().getRole()) {
-            case "admin":
-                gatewayContainer.setAdminAccessToken(response.getData().getAccessToken());
-            case "user":
-                gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
-        }
+        gatewayContainer.setUserAccessToken(response.getData().getAccessToken());
+
         assertNull(response.getErrorMessage(),
                 "В поле errorMessage вернулась ошибка");
         assertNotNull(response.getData().getAccessToken(),
@@ -270,38 +293,42 @@ public class AuthServiceStep {
     }
 
     @Step("Step | Регистрация с неверным паролем")
-    public void signUpInvalidPasswordStep(
-            SignUpSetPasswordRequest signUpSetPasswordRequest, String error) {
+    public void signUpInvalidPasswordStep(Map<String, String> invalidPasswords) {
         log.info("Step | Регистрация с неверным паролем");
-        SignUpSetPasswordResponse response = authService.postSignUpSetPassword(signUpSetPasswordRequest)
-                .statusCode(SC_BAD_REQUEST)
-                .contentType(ContentType.JSON)
-                .extract().as(SignUpSetPasswordResponse.class);
+        for (var invalidPassword : invalidPasswords.entrySet()) {
+            SignUpSetPasswordResponse response = authService.postSignUpSetPassword(new SignUpSetPasswordRequest(
+                            gatewayContainer.getConfirmationKey(),
+                            invalidPassword.getValue()))
+                    .statusCode(SC_BAD_REQUEST)
+                    .contentType(ContentType.JSON)
+                    .extract().as(SignUpSetPasswordResponse.class);
 
-        assertNull(response.getData(),
-                "При ошибке в ответе поле data не пустое");
-        assertEquals(error, response.getErrorMessage(),
-                "При неверном пароле в ответе вернулся неверный errorMessage");
+            assertNull(response.getData(),
+                    "При ошибке в ответе поле data не пустое");
+            assertEquals(invalidPassword.getKey(), response.getErrorMessage(),
+                    "При неверном пароле в ответе вернулся неверный errorMessage");
+        }
     }
 
     @Step("Step | Полный сброс паролял")
-    public void resetPasswordE2eStep(User user, String newPassword) {
+    public void resetPasswordE2eStep(String newPassword) {
         log.info("Step | Полный сброс паролял");
-        ResetPasswordResponse resetPasswordResponse = resetPasswordStep(new ResetPasswordRequest(
-                user.getPhoneNumber(), "captcha"));
-        resetPasswordVerifyStep(new ResetPasswordVerifyRequest(
-                resetPasswordResponse.getData().getConfirmationKey(), user.getOtp()));
-        resetPasswordSetPasswordStep(new ResetPasswordSetPasswordRequest(
-                resetPasswordResponse.getData().getConfirmationKey(), newPassword));
+        resetPasswordStep();
+        resetPasswordVerifyStep(gatewayContainer.getUser().getOtp());
+        resetPasswordSetPasswordStep(newPassword);
     }
 
     @Step("Step | Сброс пароля зарегистрированного пользователя")
-    public ResetPasswordResponse resetPasswordStep(ResetPasswordRequest requestBody) {
+    public ResetPasswordResponse resetPasswordStep() {
         log.info("Step | Сброс пароля зарегистрированного пользователя");
-        ResetPasswordResponse response = authService.postResetPassword(requestBody)
+        ResetPasswordResponse response = authService.postResetPassword(new ResetPasswordRequest(
+                        gatewayContainer.getUser().getPhoneNumber(),
+                        "captcha"))
                 .statusCode(SC_OK)
                 .contentType(ContentType.JSON)
                 .extract().as(ResetPasswordResponse.class);
+
+        gatewayContainer.setConfirmationKey(response.getData().getConfirmationKey());
 
         assertNull(response.getErrorMessage(),
                 "При сбросе пароля вернулся errorMessage");
@@ -314,9 +341,11 @@ public class AuthServiceStep {
     }
 
     @Step("Step | Сброс пароля НЕзарегистрированного пользователя")
-    public ResetPasswordResponse resetPasswordInvalidPhoneStep(ResetPasswordRequest requestBody) {
+    public ResetPasswordResponse resetPasswordInvalidPhoneStep(String invalidPhone) {
         log.info("Step | Сброс пароля НЕзарегистрированного пользователя");
-        ResetPasswordResponse response = authService.postResetPassword(requestBody)
+        ResetPasswordResponse response = authService.postResetPassword(new ResetPasswordRequest(
+                        invalidPhone,
+                        "captcha"))
                 .statusCode(SC_NOT_FOUND)
                 .contentType(ContentType.JSON)
                 .extract().as(ResetPasswordResponse.class);
@@ -330,16 +359,21 @@ public class AuthServiceStep {
     }
 
     @Step("Step | Сброс пароля. Верификация СМС кода")
-    public void resetPasswordVerifyStep(ResetPasswordVerifyRequest requestBody) {
+    public void resetPasswordVerifyStep(String otp) {
         log.info("Step | Сброс пароля. Верификация СМС кода");
-        authService.postResetPasswordVerify(requestBody)
+        authService.postResetPasswordVerify(new ResetPasswordVerifyRequest(
+                        gatewayContainer.getConfirmationKey(),
+                        gatewayContainer.getUser().getOtp()))
                 .statusCode(SC_OK);
     }
 
     @Step("Step | Сброс пароля с неверный СМС кодом")
-    public GatewayResponse resetPasswordVerifyInvalidOtpStep(ResetPasswordVerifyRequest requestBody) {
+    public GatewayResponse resetPasswordVerifyInvalidOtpStep(String invalidOtp) {
         log.info("Step | Сброс пароля с неверный СМС кодом");
-        GatewayResponse response = authService.postResetPasswordVerify(requestBody)
+        GatewayResponse response = authService.postResetPasswordVerify(new ResetPasswordVerifyRequest(
+                        gatewayContainer.getConfirmationKey(),
+                        invalidOtp
+                ))
                 .statusCode(SC_BAD_REQUEST)
                 .contentType(ContentType.JSON)
                 .extract().as(GatewayResponse.class);
@@ -353,9 +387,11 @@ public class AuthServiceStep {
     }
 
     @Step("Step | Сброс пароля. Неверная длина СМС кода")
-    public GatewayResponse resetPasswordVerifyInvalidLengthOtpStep(ResetPasswordVerifyRequest requestBody) {
+    public GatewayResponse resetPasswordVerifyInvalidLengthOtpStep(String invalidOtp) {
         log.info("Step | Сброс пароля. Неверная длина СМС кода");
-        GatewayResponse response = authService.postResetPasswordVerify(requestBody)
+        GatewayResponse response = authService.postResetPasswordVerify(new ResetPasswordVerifyRequest(
+                        gatewayContainer.getConfirmationKey(),
+                        invalidOtp))
                 .statusCode(SC_BAD_REQUEST)
                 .contentType(ContentType.JSON)
                 .extract().as(GatewayResponse.class);
@@ -369,32 +405,41 @@ public class AuthServiceStep {
     }
 
     @Step("Step | Сброс пароля. Установка нового пароля")
-    public void resetPasswordSetPasswordStep(ResetPasswordSetPasswordRequest requestBody) {
+    public void resetPasswordSetPasswordStep(String password) {
         log.info("Step | Сброс пароля. Установка нового пароля");
-        authService.postResetPasswordSetPassword(requestBody)
+        authService.postResetPasswordSetPassword(new ResetPasswordSetPasswordRequest(
+                        gatewayContainer.getConfirmationKey(),
+                        password))
                 .statusCode(SC_OK);
     }
 
     @Step("Step | Сброс пароля. Неверный пароль")
-    public GatewayResponse resetPasswordInvalidPasswordStep(
-            ResetPasswordSetPasswordRequest requestBody, String error) {
+    public GatewayResponse resetPasswordInvalidPasswordStep(Map<String, String> invalidPasswords) {
         log.info("Step | Сброс пароля. Неверный пароль");
-        GatewayResponse response = authService.postResetPasswordSetPassword(requestBody)
-                .statusCode(SC_BAD_REQUEST)
-                .contentType(ContentType.JSON)
-                .extract().as(GatewayResponse.class);
+        GatewayResponse response = null;
+        for (var invalidPassword : invalidPasswords.entrySet()) {
+            response = authService.postResetPasswordSetPassword(new ResetPasswordSetPasswordRequest(
+                            gatewayContainer.getConfirmationKey(),
+                            invalidPassword.getValue()))
+                    .statusCode(SC_BAD_REQUEST)
+                    .contentType(ContentType.JSON)
+                    .extract().as(GatewayResponse.class);
 
-        assertNull(response.getData(),
-                "Сброс пароля. Неверный пароль. Поле data не null");
-        assertEquals(error, response.getErrorMessage());
-
+            assertNull(response.getData(),
+                    "Сброс пароля. Неверный пароль. Поле data не null");
+            assertEquals(invalidPassword.getKey(), response.getErrorMessage(),
+                    "Сброс пароля. Неверный пароль. Вернулся неверный errorMessage");
+        }
+        if (response == null) {
+            throw new RuntimeException("Сброс пароля. Неверный пароль. Пустой response");
+        }
         return response;
     }
 
     @Step("Precondition | Регистрация. Удаление пользователя по номеру телефона")
-    public void deleteUserByPhonePrecondition(String phoneNumber, User admin) {
+    public void deleteUserByPhonePrecondition(String phoneNumber) {
         log.info("Precondition | Удаление пользователя по номеру телефона");
-        signInE2eStep(admin);
+        signInAdminE2eStep();
         GetUsersResponse getUsersResponse = usersServiceStep.getUsersStep();
         usersServiceStep.deleteUserByPhone(phoneNumber, getUsersResponse);
     }
@@ -402,7 +447,46 @@ public class AuthServiceStep {
     @Step("Precondition | Сброс пароля")
     public void resetPasswordPrecondition(User user, String newPassword) {
         log.info("Precondition | Сброс пароля");
-        resetPasswordE2eStep(user, newPassword);
-        signInInvalidPasswordStep(user, user.getPassword());
+        resetPasswordE2eStep(newPassword);
+        signInInvalidPasswordStep(user.getPassword());
+    }
+
+    @Step("Step | Полная авторизация администратора")
+    public SignInVerifyResponse signInAdminE2eStep() {
+        log.info("Step | Полная авторизация администратора");
+        signInAdminStep();
+        return signInVerifyAdminStep();
+    }
+
+    @Step("Step | Авторизация администратора")
+    public SignInResponse signInAdminStep() {
+        log.info("Step | Авторизация администратора");
+        SignInResponse response = authService.postSignIn(
+                        gatewayContainer.getAdmin().getPhoneNumber(),
+                        gatewayContainer.getAdmin().getPassword(),
+                        gatewayContainer.getAdmin().getDeviceId())
+                .statusCode(SC_OK)
+                .contentType(ContentType.JSON)
+                .extract().as(SignInResponse.class);
+
+        gatewayContainer.setAdminConfirmationKey(response.getData().getConfirmationKey());
+
+        return response;
+    }
+
+    @Step("Step | Верификация администратора с верным СМС кодом")
+    public SignInVerifyResponse signInVerifyAdminStep() {
+        log.info("Step | Верификация администратора с верным СМС кодом");
+        SignInVerifyResponse response = authService.postSignInVerify(new SignInVerifyRequest(
+                        gatewayContainer.getAdmin().getDeviceId(),
+                        gatewayContainer.getAdminConfirmationKey(),
+                        gatewayContainer.getAdmin().getOtp()))
+                .statusCode(SC_OK)
+                .contentType(ContentType.JSON)
+                .extract().as(SignInVerifyResponse.class);
+
+        gatewayContainer.setAdminAccessToken(response.getData().getAccessToken());
+
+        return response;
     }
 }

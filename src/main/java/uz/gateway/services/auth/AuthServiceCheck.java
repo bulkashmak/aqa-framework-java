@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import uz.gateway.GatewayContainer;
 import uz.gateway.dto.users.admin.users.response.GetUsersResponse;
 import uz.gateway.services.users.UsersServiceStep;
-import uz.gateway.testdata.pojo.User;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -25,12 +24,17 @@ public class AuthServiceCheck {
     UsersServiceStep usersServiceStep;
 
     @Step("CHECK | Пользователь создан в БД")
-    public void userCreatedCheck(User expectedUser, User admin) {
+    public void userCreatedCheck() {
         log.info("CHECK | Пользователь создан в БД");
-        authServiceStep.signInE2eStep(admin);
+        authServiceStep.signInAdminE2eStep();
         GetUsersResponse getUsersResponse = usersServiceStep.getUsersStep();
-        assertNotNull(usersServiceStep.getUserByPhone(expectedUser.getPhoneNumber(), getUsersResponse),
+        assertNotNull(
+                usersServiceStep.getUserByPhone(gatewayContainer.getUser().getPhoneNumber(), getUsersResponse),
                 String.format("Пользователь с номером телефона %s не найден в списке пользователей",
-                        expectedUser.getPhoneNumber()));
+                        gatewayContainer.getUser().getPhoneNumber()));
+    }
+
+    public void resetPasswordCheck() {
+        authServiceStep.signInE2eStep();
     }
 }

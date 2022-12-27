@@ -7,16 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uz.annotations.allure.Epic;
 import uz.annotations.allure.Feature;
 import uz.annotations.allure.Story;
-import uz.gateway.dto.auth.resetPassword.request.ResetPasswordRequest;
-import uz.gateway.dto.auth.resetPassword.request.ResetPasswordSetPasswordRequest;
-import uz.gateway.dto.auth.resetPassword.request.ResetPasswordVerifyRequest;
-import uz.gateway.dto.auth.resetPassword.response.ResetPasswordResponse;
-import uz.gateway.dto.auth.signIn.request.SignInVerifyRequest;
-import uz.gateway.dto.auth.signIn.response.SignInResponse;
-import uz.gateway.dto.auth.signUp.request.SignUpRequest;
-import uz.gateway.dto.auth.signUp.request.SignUpSetPasswordRequest;
-import uz.gateway.dto.auth.signUp.request.SignUpVerifyRequest;
-import uz.gateway.dto.auth.signUp.response.SignUpResponse;
 import uz.gateway.services.auth.AuthServiceCheck;
 import uz.gateway.services.auth.AuthServiceStep;
 import uz.gateway.services.auth.enums.SignUpPasswordError;
@@ -50,11 +40,8 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("default");
 
-            SignInResponse signInResponse = authServiceStep.signInStep(user);
-            authServiceStep.signInVerifyStep(new SignInVerifyRequest(
-                    user.getDeviceId(),
-                    signInResponse.getData().getConfirmationKey(),
-                    user.getOtp()));
+            authServiceStep.signInStep();
+            authServiceStep.signInVerifyStep(user.getOtp());
         }
 
         @Test
@@ -64,10 +51,10 @@ public class AuthTests extends GatewayTest {
         public void signInInvalidPhoneTest() {
 
             User user = testDataProvider.getUserByAlias("delete");
-            User admin = testDataProvider.getUserByAlias("admin");
-            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+            testDataProvider.getUserByAlias("admin");
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber());
 
-            authServiceStep.signInInvalidPhoneStep(user);
+            authServiceStep.signInInvalidPhoneStep(user.getPhoneNumber());
         }
 
         @Test
@@ -76,13 +63,10 @@ public class AuthTests extends GatewayTest {
         @DisplayName("Sign-in | Неверный СМС код")
         public void signInInvalidOtpTest() {
 
-            User user = testDataProvider.getUserByAlias("default");
+            testDataProvider.getUserByAlias("default");
 
-            SignInResponse signInResponse = authServiceStep.signInStep(user);
-            authServiceStep.signInVerifyInvalidOtpStep(new SignInVerifyRequest(
-                    user.getDeviceId(),
-                    signInResponse.getData().getConfirmationKey(),
-                    "000000"));
+            authServiceStep.signInStep();
+            authServiceStep.signInVerifyInvalidOtpStep("000000");
         }
 
         @Test
@@ -93,7 +77,7 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("default");
 
-            authServiceStep.signInInvalidPasswordStep(user, user.getPassword() + 1);
+            authServiceStep.signInInvalidPasswordStep(user.getPassword() + 1);
         }
 
         @Test
@@ -102,13 +86,10 @@ public class AuthTests extends GatewayTest {
         @DisplayName("Sign-in | Срок действия СМС кода истек")
         public void signInOtpExpiredTest() {
 
-            User user = testDataProvider.getUserByAlias("default");
+            testDataProvider.getUserByAlias("default");
 
-            SignInResponse signInResponse = authServiceStep.signInStep(user);
-            authServiceStep.signInVerifyOtpExpiredStep(new SignInVerifyRequest(
-                    user.getDeviceId(),
-                    signInResponse.getData().getConfirmationKey(),
-                    user.getOtp()));
+            authServiceStep.signInStep();
+            authServiceStep.signInVerifyOtpExpiredStep();
         }
     }
 
@@ -127,19 +108,14 @@ public class AuthTests extends GatewayTest {
         public void signUpTest() {
 
             User user = testDataProvider.getUserByAlias("user");
-            User admin = testDataProvider.getUserByAlias("admin");
-            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+            testDataProvider.getUserByAlias("admin");
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber());
 
-            SignUpResponse signUpResponse = authServiceStep.signUpStep(new SignUpRequest(
-                    user.getPhoneNumber(), "captcha"));
-            authServiceStep.signUpVerifyStep(new SignUpVerifyRequest(
-                    signUpResponse.getData().getConfirmationKey(), user.getOtp()));
-            authServiceStep.signUpSetPasswordStep(
-                    new SignUpSetPasswordRequest(
-                            signUpResponse.getData().getConfirmationKey(),
-                            user.getPassword()));
+            authServiceStep.signUpStep();
+            authServiceStep.signUpVerifyStep(user.getOtp());
+            authServiceStep.signUpSetPasswordStep(user.getPassword());
 
-            authServiceCheck.userCreatedCheck(user, admin);
+            authServiceCheck.userCreatedCheck();
         }
 
         @Test
@@ -150,8 +126,7 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("user");
 
-            authServiceStep.signUpRegisteredPhoneStep(new SignUpRequest(
-                    user.getPhoneNumber(), "captcha"));
+            authServiceStep.signUpRegisteredPhoneStep(user.getPhoneNumber());
         }
 
         @Test
@@ -161,13 +136,11 @@ public class AuthTests extends GatewayTest {
         public void signUpInvalidOtpTest() {
 
             User user = testDataProvider.getUserByAlias("delete");
-            User admin = testDataProvider.getUserByAlias("admin");
-            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+            testDataProvider.getUserByAlias("admin");
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber());
 
-            SignUpResponse signUpResponse = authServiceStep.signUpStep(new SignUpRequest(
-                    user.getPhoneNumber(), "captcha"));
-            authServiceStep.signUpVerifyInvalidOtpStep(new SignUpVerifyRequest(
-                    signUpResponse.getData().getConfirmationKey(), "000000"));
+            authServiceStep.signUpStep();
+            authServiceStep.signUpVerifyInvalidOtpStep("000000");
         }
 
         @Test
@@ -177,13 +150,11 @@ public class AuthTests extends GatewayTest {
         public void signUpExpiredOtpTest() {
 
             User user = testDataProvider.getUserByAlias("delete");
-            User admin = testDataProvider.getUserByAlias("admin");
-            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+            testDataProvider.getUserByAlias("admin");
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber());
 
-            SignUpResponse signUpResponse = authServiceStep.signUpStep(new SignUpRequest(
-                    user.getPhoneNumber(), "captcha"));
-            authServiceStep.signUpVerifyExpiredOtpStep(new SignUpVerifyRequest(
-                    signUpResponse.getData().getConfirmationKey(), user.getOtp()));
+            authServiceStep.signUpStep();
+            authServiceStep.signUpVerifyExpiredOtpStep();
         }
 
         @Test
@@ -193,8 +164,8 @@ public class AuthTests extends GatewayTest {
         public void signUpInvalidPasswordTest() {
 
             User user = testDataProvider.getUserByAlias("delete");
-            User admin = testDataProvider.getUserByAlias("admin");
-            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+            testDataProvider.getUserByAlias("admin");
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber());
 
             Map<String, String> invalidPasswords = Map.of(
                     SignUpPasswordError.TOO_SHORT.getError(), "asdf123",
@@ -204,16 +175,9 @@ public class AuthTests extends GatewayTest {
                     SignUpPasswordError.NO_DIGIT.getError(), "asdfghjk"
             );
 
-            SignUpResponse signUpResponse = authServiceStep.signUpStep(new SignUpRequest(
-                    user.getPhoneNumber(), "captcha"));
-            authServiceStep.signUpVerifyStep(new SignUpVerifyRequest(
-                    signUpResponse.getData().getConfirmationKey(), user.getOtp()));
-            for (var entry : invalidPasswords.entrySet()) {
-                authServiceStep.signUpInvalidPasswordStep(new SignUpSetPasswordRequest(
-                                signUpResponse.getData().getConfirmationKey(),
-                                entry.getValue()),
-                        entry.getKey());
-            }
+            authServiceStep.signUpStep();
+            authServiceStep.signUpVerifyStep(user.getOtp());
+            authServiceStep.signUpInvalidPasswordStep(invalidPasswords);
         }
     }
 
@@ -234,14 +198,11 @@ public class AuthTests extends GatewayTest {
             User user = testDataProvider.getUserByAlias("reset");
             authServiceStep.resetPasswordPrecondition(user, user.getPassword() + 1);
 
-            ResetPasswordResponse resetPasswordResponse = authServiceStep.resetPasswordStep(new ResetPasswordRequest(
-                    user.getPhoneNumber(), "captcha"));
-            authServiceStep.resetPasswordVerifyStep(new ResetPasswordVerifyRequest(
-                    resetPasswordResponse.getData().getConfirmationKey(), user.getOtp()));
-            authServiceStep.resetPasswordSetPasswordStep(new ResetPasswordSetPasswordRequest(
-                    resetPasswordResponse.getData().getConfirmationKey(), user.getPassword()));
+            authServiceStep.resetPasswordStep();
+            authServiceStep.resetPasswordVerifyStep(user.getOtp());
+            authServiceStep.resetPasswordSetPasswordStep(user.getPassword());
 
-            authServiceStep.signInE2eStep(user);
+            authServiceCheck.resetPasswordCheck();
         }
 
         @Test
@@ -251,11 +212,10 @@ public class AuthTests extends GatewayTest {
         public void resetPasswordInvalidPhoneTest() {
 
             User user = testDataProvider.getUserByAlias("delete");
-            User admin = testDataProvider.getUserByAlias("admin");
-            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+            testDataProvider.getUserByAlias("admin");
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber());
 
-            authServiceStep.resetPasswordInvalidPhoneStep(new ResetPasswordRequest(
-                    user.getPhoneNumber(), "captcha"));
+            authServiceStep.resetPasswordInvalidPhoneStep(user.getPhoneNumber());
         }
 
         @Test
@@ -264,12 +224,10 @@ public class AuthTests extends GatewayTest {
         @DisplayName("Reset password | Неверный СМС код")
         public void resetPasswordInvalidOtpTest() {
 
-            User user = testDataProvider.getUserByAlias("reset");
+            testDataProvider.getUserByAlias("reset");
 
-            ResetPasswordResponse resetPasswordResponse = authServiceStep.resetPasswordStep(new ResetPasswordRequest(
-                    user.getPhoneNumber(), "captcha"));
-            authServiceStep.resetPasswordVerifyInvalidOtpStep(new ResetPasswordVerifyRequest(
-                    resetPasswordResponse.getData().getConfirmationKey(), "999991"));
+            authServiceStep.resetPasswordStep();
+            authServiceStep.resetPasswordVerifyInvalidOtpStep("999991");
         }
 
         @Test
@@ -278,12 +236,10 @@ public class AuthTests extends GatewayTest {
         @DisplayName("Reset password | Неверная длина СМС кода")
         public void resetPasswordInvalidLengthOtpTest() {
 
-            User user = testDataProvider.getUserByAlias("reset");
+            testDataProvider.getUserByAlias("reset");
 
-            ResetPasswordResponse resetPasswordResponse = authServiceStep.resetPasswordStep(new ResetPasswordRequest(
-                    user.getPhoneNumber(), "captcha"));
-            authServiceStep.resetPasswordVerifyInvalidLengthOtpStep(new ResetPasswordVerifyRequest(
-                    resetPasswordResponse.getData().getConfirmationKey(), "99999"));
+            authServiceStep.resetPasswordStep();
+            authServiceStep.resetPasswordVerifyInvalidLengthOtpStep("99999");
         }
 
         @Test
@@ -302,15 +258,9 @@ public class AuthTests extends GatewayTest {
                     SignUpPasswordError.NO_DIGIT.getError(), "asdfghjk"
             );
 
-            ResetPasswordResponse resetPasswordResponse = authServiceStep.resetPasswordStep(new ResetPasswordRequest(
-                    user.getPhoneNumber(), "captcha"));
-            authServiceStep.resetPasswordVerifyStep(new ResetPasswordVerifyRequest(
-                    resetPasswordResponse.getData().getConfirmationKey(), user.getOtp()));
-            for (var entry : invalidPasswords.entrySet()) {
-                authServiceStep.resetPasswordInvalidPasswordStep(new ResetPasswordSetPasswordRequest(
-                                resetPasswordResponse.getData().getConfirmationKey(), entry.getValue()),
-                        entry.getKey());
-            }
+            authServiceStep.resetPasswordStep();
+            authServiceStep.resetPasswordVerifyStep(user.getOtp());
+            authServiceStep.resetPasswordInvalidPasswordStep(invalidPasswords);
         }
     }
 }
