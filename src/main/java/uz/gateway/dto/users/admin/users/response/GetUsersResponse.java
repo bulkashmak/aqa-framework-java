@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseGetUsers {
+public class GetUsersResponse {
 
     @JsonProperty("data")
     private Data data;

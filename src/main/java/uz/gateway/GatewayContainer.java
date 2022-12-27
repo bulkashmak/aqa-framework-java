@@ -14,5 +14,9 @@ public class GatewayContainer {
     String adminAccessToken;
     String adminRefreshToken;
 
+    String confirmationKey;
+    String adminConfirmationKey;
+
     User user;
+    User admin;
 }

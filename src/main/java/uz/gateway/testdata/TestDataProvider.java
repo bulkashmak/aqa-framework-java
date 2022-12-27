@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uz.gateway.GatewayContainer;
-import uz.gateway.dto.users.admin.users.response.ResponseGetUsers;
+import uz.gateway.dto.users.admin.users.response.GetUsersResponse;
 import uz.gateway.testdata.pojo.Client;
 import uz.gateway.testdata.pojo.Server;
 import uz.gateway.testdata.pojo.TestData;
@@ -65,9 +65,13 @@ public class TestDataProvider {
         User user = getUsers().stream()
                 .filter(u -> u.getAlias().equals(alias)).findFirst().orElse(null);
         if (user == null) {
-            throw new RuntimeException("Ошибка при чтении user из testdata");
+            throw new RuntimeException("Пользователь не найден в testdata");
         } else {
-            gatewayContainer.setUser(user);
+            if (user.getRole().equals("admin")) {
+                gatewayContainer.setAdmin(user);
+            } else {
+                gatewayContainer.setUser(user);
+            }
             return user;
         }
     }
@@ -76,8 +80,8 @@ public class TestDataProvider {
         return testData.getUsers();
     }
 
-    public ResponseGetUsers.Data.Content getUserByPhone(String phoneNumber, ResponseGetUsers response) {
-        List<ResponseGetUsers.Data.Content> users = response.getData().getContent();
+    public GetUsersResponse.Data.Content getUserByPhone(String phoneNumber, GetUsersResponse response) {
+        List<GetUsersResponse.Data.Content> users = response.getData().getContent();
         return users.stream().filter(u -> u.getPhoneNumber().equals(phoneNumber)).findFirst().orElse(null);
     }
 

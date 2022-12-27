@@ -4,15 +4,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uz.gateway.dto.auth.signIn.response.ResponseSignInVerify;
+import uz.gateway.dto.auth.signIn.response.SignInResponse;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseSignUpSetPassword {
+public class SignUpResponse {
 
     @JsonProperty("data")
-    private ResponseSignInVerify.Data data;
+    private SignInResponse.Data data;
     @JsonProperty("errorMessage")
     private String errorMessage;
     @JsonProperty("timestamp")
@@ -20,13 +20,9 @@ public class ResponseSignUpSetPassword {
 
     @lombok.Data
     public static class Data {
-        @JsonProperty("accessToken")
-        String accessToken;
-        @JsonProperty("refreshToken")
-        String refreshToken;
-        @JsonProperty("refreshTokenExp")
-        Long refreshTokenExp;
-        @JsonProperty("accessTokenType")
-        String accessTokenType;
+        @JsonProperty("ttl")
+        private long ttl;
+        @JsonProperty("confirmationKey")
+        private String confirmationKey;
     }
 }

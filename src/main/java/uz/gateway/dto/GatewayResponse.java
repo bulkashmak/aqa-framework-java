@@ -7,7 +7,7 @@ import lombok.Data;
  * Дэфолтная модель ответа Gateway API
  */
 @Data
-public class BaseResponse {
+public class GatewayResponse {
     @JsonProperty("data")
     protected Object data;
     @JsonProperty("errorMessage")
