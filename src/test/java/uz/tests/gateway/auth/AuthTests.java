@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uz.annotations.allure.Epic;
 import uz.annotations.allure.Feature;
 import uz.annotations.allure.Story;
+import uz.annotations.allure.Substory;
 import uz.gateway.services.auth.AuthServiceCheck;
 import uz.gateway.services.auth.AuthServiceStep;
 import uz.gateway.services.auth.enums.SignUpPasswordError;
@@ -290,7 +291,8 @@ public class AuthTests extends GatewayTest {
     @DisplayName("Refresh token tests")
     @Epic("Gateway API")
     @Feature("Auth service")
-    @Story("Refresh token")
+    @Story("Token")
+    @Substory("Refresh token")
     public class RefreshTokenTests {
 
         @Test
