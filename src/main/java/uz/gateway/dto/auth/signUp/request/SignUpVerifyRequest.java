@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequestSignUpVerify {
+public class SignUpVerifyRequest {
 
     @JsonProperty("confirmationKey")
     private String confirmationKey;

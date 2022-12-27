@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RequestSignUp {
+public class SignUpRequest {
 
     @JsonProperty("phoneNumber")
     private String phoneNumber;

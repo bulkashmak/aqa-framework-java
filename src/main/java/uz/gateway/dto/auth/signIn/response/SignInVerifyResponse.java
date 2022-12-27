@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseSignInVerify {
+public class SignInVerifyResponse {
 
     @JsonProperty("data")
     private Data data;

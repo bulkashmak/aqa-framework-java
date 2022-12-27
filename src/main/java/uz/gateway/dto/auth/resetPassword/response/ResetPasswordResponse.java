@@ -1,28 +1,29 @@
-package uz.gateway.dto.auth.signUp.response;
+package uz.gateway.dto.auth.resetPassword.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import uz.gateway.dto.auth.signIn.response.ResponseSignIn;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResponseSignUp {
+public class ResetPasswordResponse {
 
     @JsonProperty("data")
-    private ResponseSignIn.Data data;
+    public Data data;
     @JsonProperty("errorMessage")
-    private String errorMessage;
+    public Object errorMessage;
     @JsonProperty("timestamp")
-    private long timestamp;
+    public Long timestamp;
 
     @lombok.Data
     public static class Data {
+
         @JsonProperty("ttl")
-        private long ttl;
+        public Integer ttl;
         @JsonProperty("confirmationKey")
-        private String confirmationKey;
+        public String confirmationKey;
+
     }
 }

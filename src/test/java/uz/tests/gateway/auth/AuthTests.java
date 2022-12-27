@@ -7,16 +7,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import uz.annotations.allure.Epic;
 import uz.annotations.allure.Feature;
 import uz.annotations.allure.Story;
-import uz.gateway.dto.auth.signIn.request.RequestSignInVerify;
-import uz.gateway.dto.auth.signIn.response.ResponseSignIn;
-import uz.gateway.dto.auth.signUp.request.RequestSignUp;
-import uz.gateway.dto.auth.signUp.request.RequestSignUpSetPassoword;
-import uz.gateway.dto.auth.signUp.request.RequestSignUpVerify;
-import uz.gateway.dto.auth.signUp.response.ResponseSignUp;
+import uz.gateway.dto.auth.resetPassword.request.ResetPasswordRequest;
+import uz.gateway.dto.auth.resetPassword.request.ResetPasswordSetPasswordRequest;
+import uz.gateway.dto.auth.resetPassword.request.ResetPasswordVerifyRequest;
+import uz.gateway.dto.auth.resetPassword.response.ResetPasswordResponse;
+import uz.gateway.dto.auth.signIn.request.SignInVerifyRequest;
+import uz.gateway.dto.auth.signIn.response.SignInResponse;
+import uz.gateway.dto.auth.signUp.request.SignUpRequest;
+import uz.gateway.dto.auth.signUp.request.SignUpSetPasswordRequest;
+import uz.gateway.dto.auth.signUp.request.SignUpVerifyRequest;
+import uz.gateway.dto.auth.signUp.response.SignUpResponse;
 import uz.gateway.services.auth.AuthServiceCheck;
 import uz.gateway.services.auth.AuthServiceStep;
 import uz.gateway.services.auth.enums.SignUpPasswordError;
-import uz.gateway.services.users.UsersServiceStep;
 import uz.gateway.testdata.pojo.User;
 import uz.tests.gateway.GatewayTest;
 
@@ -31,11 +34,9 @@ public class AuthTests extends GatewayTest {
     @Autowired
     AuthServiceCheck authServiceCheck;
 
-    @Autowired
-    UsersServiceStep usersServiceStep;
-
     @Nested
     @Owner("Bulat Maskurov")
+    @DisplayName("Sign-in tests")
     @Epic("Gateway API")
     @Feature("Auth service")
     @Story("Sign-in")
@@ -49,10 +50,10 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("default");
 
-            ResponseSignIn responseSignIn = authServiceStep.signInStep(user);
-            authServiceStep.signInVerifyStep(new RequestSignInVerify(
+            SignInResponse signInResponse = authServiceStep.signInStep(user);
+            authServiceStep.signInVerifyStep(new SignInVerifyRequest(
                     user.getDeviceId(),
-                    responseSignIn.getData().getConfirmationKey(),
+                    signInResponse.getData().getConfirmationKey(),
                     user.getOtp()));
         }
 
@@ -64,7 +65,7 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("delete");
             User admin = testDataProvider.getUserByAlias("admin");
-            usersServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
 
             authServiceStep.signInInvalidPhoneStep(user);
         }
@@ -77,10 +78,10 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("default");
 
-            ResponseSignIn responseSignIn = authServiceStep.signInStep(user);
-            authServiceStep.signInVerifyInvalidOtpStep(new RequestSignInVerify(
+            SignInResponse signInResponse = authServiceStep.signInStep(user);
+            authServiceStep.signInVerifyInvalidOtpStep(new SignInVerifyRequest(
                     user.getDeviceId(),
-                    responseSignIn.getData().getConfirmationKey(),
+                    signInResponse.getData().getConfirmationKey(),
                     "000000"));
         }
 
@@ -103,16 +104,17 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("default");
 
-            ResponseSignIn responseSignIn = authServiceStep.signInStep(user);
-            authServiceStep.signInVerifyOtpExpiredStep(new RequestSignInVerify(
+            SignInResponse signInResponse = authServiceStep.signInStep(user);
+            authServiceStep.signInVerifyOtpExpiredStep(new SignInVerifyRequest(
                     user.getDeviceId(),
-                    responseSignIn.getData().getConfirmationKey(),
+                    signInResponse.getData().getConfirmationKey(),
                     user.getOtp()));
         }
     }
 
     @Nested
     @Owner("Bulat Maskurov")
+    @DisplayName("Sign-up tests")
     @Epic("Gateway API")
     @Feature("Auth service")
     @Story("Sign-up")
@@ -126,15 +128,15 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("user");
             User admin = testDataProvider.getUserByAlias("admin");
-            usersServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
 
-            ResponseSignUp responseSignUp = authServiceStep.signUpStep(new RequestSignUp(
+            SignUpResponse signUpResponse = authServiceStep.signUpStep(new SignUpRequest(
                     user.getPhoneNumber(), "captcha"));
-            authServiceStep.signUpVerifyStep(new RequestSignUpVerify(
-                    responseSignUp.getData().getConfirmationKey(), user.getOtp()));
+            authServiceStep.signUpVerifyStep(new SignUpVerifyRequest(
+                    signUpResponse.getData().getConfirmationKey(), user.getOtp()));
             authServiceStep.signUpSetPasswordStep(
-                    new RequestSignUpSetPassoword(
-                            responseSignUp.getData().getConfirmationKey(),
+                    new SignUpSetPasswordRequest(
+                            signUpResponse.getData().getConfirmationKey(),
                             user.getPassword()));
 
             authServiceCheck.userCreatedCheck(user, admin);
@@ -148,7 +150,7 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("user");
 
-            authServiceStep.signUpRegisteredPhoneStep(new RequestSignUp(
+            authServiceStep.signUpRegisteredPhoneStep(new SignUpRequest(
                     user.getPhoneNumber(), "captcha"));
         }
 
@@ -160,12 +162,12 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("delete");
             User admin = testDataProvider.getUserByAlias("admin");
-            usersServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
 
-            ResponseSignUp responseSignUp = authServiceStep.signUpStep(new RequestSignUp(
+            SignUpResponse signUpResponse = authServiceStep.signUpStep(new SignUpRequest(
                     user.getPhoneNumber(), "captcha"));
-            authServiceStep.signUpVerifyInvalidOtpStep(new RequestSignUpVerify(
-                    responseSignUp.getData().getConfirmationKey(), "000000"));
+            authServiceStep.signUpVerifyInvalidOtpStep(new SignUpVerifyRequest(
+                    signUpResponse.getData().getConfirmationKey(), "000000"));
         }
 
         @Test
@@ -176,12 +178,12 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("delete");
             User admin = testDataProvider.getUserByAlias("admin");
-            usersServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
 
-            ResponseSignUp responseSignUp = authServiceStep.signUpStep(new RequestSignUp(
+            SignUpResponse signUpResponse = authServiceStep.signUpStep(new SignUpRequest(
                     user.getPhoneNumber(), "captcha"));
-            authServiceStep.signUpVerifyExpiredOtpStep(new RequestSignUpVerify(
-                    responseSignUp.getData().getConfirmationKey(), user.getOtp()));
+            authServiceStep.signUpVerifyExpiredOtpStep(new SignUpVerifyRequest(
+                    signUpResponse.getData().getConfirmationKey(), user.getOtp()));
         }
 
         @Test
@@ -192,7 +194,7 @@ public class AuthTests extends GatewayTest {
 
             User user = testDataProvider.getUserByAlias("delete");
             User admin = testDataProvider.getUserByAlias("admin");
-            usersServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
 
             Map<String, String> invalidPasswords = Map.of(
                     SignUpPasswordError.TOO_SHORT.getError(), "asdf123",
@@ -202,14 +204,111 @@ public class AuthTests extends GatewayTest {
                     SignUpPasswordError.NO_DIGIT.getError(), "asdfghjk"
             );
 
-            ResponseSignUp responseSignUp = authServiceStep.signUpStep(new RequestSignUp(
+            SignUpResponse signUpResponse = authServiceStep.signUpStep(new SignUpRequest(
                     user.getPhoneNumber(), "captcha"));
-            authServiceStep.signUpVerifyStep(new RequestSignUpVerify(
-                    responseSignUp.getData().getConfirmationKey(), user.getOtp()));
+            authServiceStep.signUpVerifyStep(new SignUpVerifyRequest(
+                    signUpResponse.getData().getConfirmationKey(), user.getOtp()));
             for (var entry : invalidPasswords.entrySet()) {
-                authServiceStep.signUpInvalidPasswordStep(new RequestSignUpSetPassoword(
-                                responseSignUp.getData().getConfirmationKey(),
+                authServiceStep.signUpInvalidPasswordStep(new SignUpSetPasswordRequest(
+                                signUpResponse.getData().getConfirmationKey(),
                                 entry.getValue()),
+                        entry.getKey());
+            }
+        }
+    }
+
+    @Nested
+    @Owner("Bulat Maskurov")
+    @DisplayName("Reset password tests")
+    @Epic("Gateway API")
+    @Feature("Auth service")
+    @Story("Reset password")
+    public class ResetPasswordTests {
+
+        @Test
+        @AllureId("2362")
+        @Tag("positive")
+        @DisplayName("Reset password | Валидные данные")
+        public void resetPasswordTest() {
+
+            User user = testDataProvider.getUserByAlias("reset");
+            authServiceStep.resetPasswordPrecondition(user, user.getPassword() + 1);
+
+            ResetPasswordResponse resetPasswordResponse = authServiceStep.resetPasswordStep(new ResetPasswordRequest(
+                    user.getPhoneNumber(), "captcha"));
+            authServiceStep.resetPasswordVerifyStep(new ResetPasswordVerifyRequest(
+                    resetPasswordResponse.getData().getConfirmationKey(), user.getOtp()));
+            authServiceStep.resetPasswordSetPasswordStep(new ResetPasswordSetPasswordRequest(
+                    resetPasswordResponse.getData().getConfirmationKey(), user.getPassword()));
+
+            authServiceStep.signInE2eStep(user);
+        }
+
+        @Test
+        @AllureId("2724")
+        @Tag("negative")
+        @DisplayName("Reset password | Незарегистрированный номер телефона")
+        public void resetPasswordInvalidPhoneTest() {
+
+            User user = testDataProvider.getUserByAlias("delete");
+            User admin = testDataProvider.getUserByAlias("admin");
+            authServiceStep.deleteUserByPhonePrecondition(user.getPhoneNumber(), admin);
+
+            authServiceStep.resetPasswordInvalidPhoneStep(new ResetPasswordRequest(
+                    user.getPhoneNumber(), "captcha"));
+        }
+
+        @Test
+        @AllureId("3537")
+        @Tag("negative")
+        @DisplayName("Reset password | Неверный СМС код")
+        public void resetPasswordInvalidOtpTest() {
+
+            User user = testDataProvider.getUserByAlias("reset");
+
+            ResetPasswordResponse resetPasswordResponse = authServiceStep.resetPasswordStep(new ResetPasswordRequest(
+                    user.getPhoneNumber(), "captcha"));
+            authServiceStep.resetPasswordVerifyInvalidOtpStep(new ResetPasswordVerifyRequest(
+                    resetPasswordResponse.getData().getConfirmationKey(), "999991"));
+        }
+
+        @Test
+        @AllureId("4829")
+        @Tag("negative")
+        @DisplayName("Reset password | Неверная длина СМС кода")
+        public void resetPasswordInvalidLengthOtpTest() {
+
+            User user = testDataProvider.getUserByAlias("reset");
+
+            ResetPasswordResponse resetPasswordResponse = authServiceStep.resetPasswordStep(new ResetPasswordRequest(
+                    user.getPhoneNumber(), "captcha"));
+            authServiceStep.resetPasswordVerifyInvalidLengthOtpStep(new ResetPasswordVerifyRequest(
+                    resetPasswordResponse.getData().getConfirmationKey(), "99999"));
+        }
+
+        @Test
+        @AllureId("4830")
+        @Tag("negative")
+        @DisplayName("Reset password | Неверный пароль")
+        public void resetPasswordInvalidPasswordTest() {
+
+            User user = testDataProvider.getUserByAlias("reset");
+
+            Map<String, String> invalidPasswords = Map.of(
+                    SignUpPasswordError.TOO_SHORT.getError(), "asdf123",
+                    SignUpPasswordError.TOO_LONG.getError(), "a12345678901234567890",
+                    SignUpPasswordError.INVALID_CHARACTERS.getError(), "фあasdf1234",
+                    SignUpPasswordError.NO_LETTER.getError(), "12345678",
+                    SignUpPasswordError.NO_DIGIT.getError(), "asdfghjk"
+            );
+
+            ResetPasswordResponse resetPasswordResponse = authServiceStep.resetPasswordStep(new ResetPasswordRequest(
+                    user.getPhoneNumber(), "captcha"));
+            authServiceStep.resetPasswordVerifyStep(new ResetPasswordVerifyRequest(
+                    resetPasswordResponse.getData().getConfirmationKey(), user.getOtp()));
+            for (var entry : invalidPasswords.entrySet()) {
+                authServiceStep.resetPasswordInvalidPasswordStep(new ResetPasswordSetPasswordRequest(
+                                resetPasswordResponse.getData().getConfirmationKey(), entry.getValue()),
                         entry.getKey());
             }
         }

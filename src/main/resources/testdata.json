@@ -37,6 +37,14 @@
       "role": "user"
     },
     {
+      "alias": "reset",
+      "phoneNumber": "998900000004",
+      "password": "asdf1234",
+      "deviceId": "reset_device_id",
+      "otp": "999999",
+      "role": "user"
+    },
+    {
       "alias": "delete",
       "phoneNumber": "998901111111",
       "password": "delete1234",
