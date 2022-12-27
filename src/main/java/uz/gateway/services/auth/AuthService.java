@@ -5,10 +5,12 @@ import io.restassured.response.ValidatableResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import uz.gateway.GatewayClient;
+import uz.gateway.dto.auth.refreshToken.RefreshTokenRequest;
 import uz.gateway.dto.auth.resetPassword.request.ResetPasswordRequest;
 import uz.gateway.dto.auth.resetPassword.request.ResetPasswordSetPasswordRequest;
 import uz.gateway.dto.auth.resetPassword.request.ResetPasswordVerifyRequest;
 import uz.gateway.dto.auth.signIn.request.SignInVerifyRequest;
+import uz.gateway.dto.auth.signOut.SignOutRequest;
 import uz.gateway.dto.auth.signUp.request.SignUpRequest;
 import uz.gateway.dto.auth.signUp.request.SignUpSetPasswordRequest;
 import uz.gateway.dto.auth.signUp.request.SignUpVerifyRequest;
@@ -103,6 +105,26 @@ public class AuthService extends GatewayClient {
                 .then();
     }
 
+    public ValidatableResponse postSignOut(SignOutRequest requestBody) {
+        log.info("POST запрос {}", Path.SIGN_OUT.getPath());
+        return given()
+                .spec(defaultSpec)
+                .contentType(ContentType.JSON)
+                .body(requestBody)
+                .post(Path.SIGN_OUT.getPath())
+                .then();
+    }
+
+    public ValidatableResponse postRefreshToken(RefreshTokenRequest requestBody) {
+        log.info("POST запрос {}", Path.REFRESH_TOKEN.getPath());
+        return given()
+                .spec(defaultSpec)
+                .contentType(ContentType.JSON)
+                .body(requestBody)
+                .post(Path.REFRESH_TOKEN.getPath())
+                .then();
+    }
+
     private enum Path {
         SIGN_IN("/auth/sign-in"),
         SIGN_IN_VERIFY("/auth/sign-in/verify"),
@@ -111,7 +133,9 @@ public class AuthService extends GatewayClient {
         SIGN_UP_SET_PASSWORD("/auth/sign-up/set-password"),
         RESET_PASSWORD("/auth/reset"),
         RESET_PASSWORD_VERIFY("/auth/reset/verify"),
-        RESET_PASSWORD_SET_PASSWORD("/auth/reset/set-password");
+        RESET_PASSWORD_SET_PASSWORD("/auth/reset/set-password"),
+        SIGN_OUT("/auth/sign-out"),
+        REFRESH_TOKEN("/auth/refresh-token");
 
         private final String path;
 
