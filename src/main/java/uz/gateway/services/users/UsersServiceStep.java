@@ -5,7 +5,7 @@ import io.restassured.http.ContentType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import uz.gateway.GatewayContainer;
+import uz.gateway.GatewayContext;
 import uz.gateway.dto.users.admin.users.response.GetUsersResponse;
 import uz.gateway.services.auth.AuthServiceStep;
 import uz.gateway.services.users.controllers.AdminController;
@@ -19,7 +19,7 @@ import static org.apache.hc.core5.http.HttpStatus.SC_OK;
 public class UsersServiceStep {
 
     @Autowired
-    GatewayContainer gatewayContainer;
+    GatewayContext gatewayContext;
 
     @Autowired
     AdminController adminController;

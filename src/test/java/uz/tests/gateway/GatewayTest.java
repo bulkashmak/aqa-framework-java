@@ -2,10 +2,10 @@ package uz.tests.gateway;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import uz.DboB2bApplication;
+import uz.Application;
 import uz.gateway.testdata.TestDataProvider;
 
-@SpringBootTest(classes = DboB2bApplication.class)
+@SpringBootTest(classes = Application.class)
 public abstract class GatewayTest {
 
     @Autowired

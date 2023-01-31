@@ -6,7 +6,7 @@ import uz.gateway.testdata.pojo.User;
 
 @Data
 @Component
-public class GatewayContainer {
+public class GatewayContext {
 
     String userAccessToken;
     String userRefreshToken;

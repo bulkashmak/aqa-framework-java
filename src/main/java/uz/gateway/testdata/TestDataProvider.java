@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import uz.gateway.GatewayContainer;
+import uz.gateway.GatewayContext;
 import uz.gateway.dto.users.admin.users.response.GetUsersResponse;
 import uz.gateway.testdata.pojo.Client;
 import uz.gateway.testdata.pojo.Server;
@@ -23,7 +23,7 @@ import java.util.List;
 public class TestDataProvider {
 
     @Autowired
-    GatewayContainer gatewayContainer;
+    GatewayContext gatewayContext;
 
     static TestData testData = readTestData();
 
@@ -68,9 +68,9 @@ public class TestDataProvider {
             throw new RuntimeException("Пользователь не найден в testdata");
         } else {
             if (user.getRole().equals("admin")) {
-                gatewayContainer.setAdmin(user);
+                gatewayContext.setAdmin(user);
             } else {
-                gatewayContainer.setUser(user);
+                gatewayContext.setUser(user);
             }
             return user;
         }

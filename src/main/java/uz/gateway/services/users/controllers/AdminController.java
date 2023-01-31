@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uz.gateway.GatewayClient;
-import uz.gateway.GatewayContainer;
+import uz.gateway.GatewayContext;
 
 import static io.restassured.RestAssured.given;
 
@@ -14,13 +14,13 @@ import static io.restassured.RestAssured.given;
 public class AdminController extends GatewayClient {
 
     @Autowired
-    GatewayContainer gatewayContainer;
+    GatewayContext gatewayContext;
 
     public ValidatableResponse getUsers() {
         log.info("GET запрос {}", Path.GET_USERS.getPath());
         return given()
                 .spec(defaultSpec)
-                .header("Authorization", String.format("Bearer %s", gatewayContainer.getAdminAccessToken()))
+                .header("Authorization", String.format("Bearer %s", gatewayContext.getAdminAccessToken()))
                 .get(Path.GET_USERS.getPath())
                 .then();
     }
@@ -30,7 +30,7 @@ public class AdminController extends GatewayClient {
         String path = String.format(Path.GET_USER.getPath(), userId);
         return given()
                 .spec(defaultSpec)
-                .header("Authorization", String.format("Bearer %s", gatewayContainer.getAdminAccessToken()))
+                .header("Authorization", String.format("Bearer %s", gatewayContext.getAdminAccessToken()))
                 .get(path)
                 .then();
     }
@@ -40,7 +40,7 @@ public class AdminController extends GatewayClient {
         String path = String.format(Path.POST_LOCK_USER.getPath(), userId);
         return given()
                 .spec(defaultSpec)
-                .header("Authorization", String.format("Bearer %s", gatewayContainer.getAdminAccessToken()))
+                .header("Authorization", String.format("Bearer %s", gatewayContext.getAdminAccessToken()))
                 .post(path)
                 .then();
     }
@@ -50,7 +50,7 @@ public class AdminController extends GatewayClient {
         String path = String.format(Path.DELETE_USER.getPath(), userId);
         return given()
                 .spec(defaultSpec)
-                .header("Authorization", String.format("Bearer %s", gatewayContainer.getAdminAccessToken()))
+                .header("Authorization", String.format("Bearer %s", gatewayContext.getAdminAccessToken()))
                 .delete(path)
                 .then();
     }
